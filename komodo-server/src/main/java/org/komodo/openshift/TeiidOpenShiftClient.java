@@ -38,8 +38,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.TarExporter;
-import org.komodo.KEngine;
 import org.komodo.KException;
+import org.komodo.RepositoryManager;
 import org.komodo.StringConstants;
 import org.komodo.datasources.DataSourceDefinition;
 import org.komodo.datasources.DefaultSyndesisDataSource;
@@ -309,15 +309,15 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     private Map<String, BuildStatus> activeJobs = new ConcurrentHashMap<>();
-    private KEngine kengine;
+    private RepositoryManager repositoryManager;
     private Map<String, String> mavenRepos;
 
     public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor,
-            KomodoConfigurationProperties config, KEngine kengine, Map<String, String> mavenRepos) {
+            KomodoConfigurationProperties config, RepositoryManager repositoryManager, Map<String, String> mavenRepos) {
         this.metadata = metadata;
         this.encryptionComponent = encryptor;
         this.config = config;
-        this.kengine = kengine;
+        this.repositoryManager = repositoryManager;
         this.workExecutor.allowCoreThreadTimeOut(true);
         this.configureService.allowCoreThreadTimeOut(true);
         this.mavenRepos = mavenRepos;
@@ -459,9 +459,9 @@ public class TeiidOpenShiftClient implements V1Constants {
             JsonNode root = mapper.readTree(response);
             String id = root.get("id").asText();
 
-            this.kengine.runInTransaction(false, () -> {
+            this.repositoryManager.runInTransaction(false, () -> {
                 // save the ID to the database
-                DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
+                DataVirtualization dv = this.repositoryManager.findDataVirtualization(virtualizationName);
                 if (dv != null) {
                     dv.setSourceId(id);
                 }
@@ -483,7 +483,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             this.integrationsInUse = findIntegrationByConnectionId();
             this.integrationRefreshTime = System.currentTimeMillis();
         }
-        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
+        DataVirtualization dv = this.repositoryManager.findDataVirtualization(virtualizationName);
         if (dv != null && dv.getSourceId() != null) {
             usedIn = this.integrationsInUse.get(dv.getSourceId());
         }
@@ -537,8 +537,8 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     private void removeSyndesisConnection(String virtualizationName) throws KException {
         try {
-            DataVirtualization dv = this.kengine.runInTransaction(false, () -> {
-                return this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
+            DataVirtualization dv = this.repositoryManager.runInTransaction(false, () -> {
+                return this.repositoryManager.findDataVirtualization(virtualizationName);
             });
 
             if (dv != null) {
@@ -676,8 +676,8 @@ public class TeiidOpenShiftClient implements V1Constants {
      * @throws Exception
      */
     public String getUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws Exception {
-        return kengine.runInTransaction(false, () -> {
-            SourceSchema ss = kengine.getWorkspaceManager().findSchemaBySourceId(scd.getSyndesisConnectionId());
+        return repositoryManager.runInTransaction(false, () -> {
+            SourceSchema ss = repositoryManager.findSchemaBySourceId(scd.getSyndesisConnectionId());
             if (ss != null) {
                 return ss.getName();
             }
@@ -695,7 +695,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             taken.addAll(ModelMetaData.getReservedNames());
 
             String toUse = name;
-            if (taken.contains(name) || kengine.getWorkspaceManager().isNameInUse(name)) {
+            if (taken.contains(name) || repositoryManager.isNameInUse(name)) {
                 //we'll just use lowercase and numbers
                 Random r = new Random();
                 int val = r.nextInt();
@@ -713,7 +713,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             }
 
             //update the db with the name we'll use
-            kengine.getWorkspaceManager().createSchema(scd.getSyndesisConnectionId(), toUse, null);
+            repositoryManager.createSchema(scd.getSyndesisConnectionId(), toUse, null);
             return toUse;
         });
     }
@@ -727,7 +727,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     public String findDataSourceNameByEventId(String eventId) throws KException  {
-        SourceSchema sourceSchema = this.kengine.getWorkspaceManager().findSchemaBySourceId(eventId);
+        SourceSchema sourceSchema = this.repositoryManager.findSchemaBySourceId(eventId);
         if (sourceSchema != null) {
             return sourceSchema.getName();
         }

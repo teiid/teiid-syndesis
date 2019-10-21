@@ -31,8 +31,8 @@ import org.komodo.datasources.H2SQLDefinition;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.repository.KomodoRepositoryConfiguration;
-import org.komodo.repository.WorkspaceManagerImpl;
+import org.komodo.repository.RepositoryConfiguration;
+import org.komodo.repository.RepositoryManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
@@ -48,7 +48,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
+@ContextConfiguration(classes = {RepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 @SuppressWarnings("nls")
 public class DataVirtualizationServiceTest {
@@ -57,7 +57,7 @@ public class DataVirtualizationServiceTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private WorkspaceManagerImpl workspaceManagerImpl;
+    private RepositoryManagerImpl workspaceManagerImpl;
 
     @Autowired
     private DataVirtualizationService komodoDataserviceService;

@@ -19,12 +19,13 @@
 package org.komodo;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 
-public interface WorkspaceManager {
+public interface RepositoryManager {
 
     public static class EntityNotFoundException extends Exception {
 
@@ -34,6 +35,26 @@ public interface WorkspaceManager {
         private static final long serialVersionUID = -3995911719208421687L;
 
     }
+
+    public class TimeoutException extends Exception {
+
+        private static final long serialVersionUID = -3492466153109760780L;
+
+        public TimeoutException(Exception cause) {
+            super(cause);
+        }
+
+    }
+
+    /**
+     * Run the callable in the given transaction
+     * @param rollbackOnly
+     * @param callable
+     * @param <T>
+     * @return
+     * @throws Exception
+     */
+    <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception;
 
     SourceSchema findSchemaBySourceId(String id);
 

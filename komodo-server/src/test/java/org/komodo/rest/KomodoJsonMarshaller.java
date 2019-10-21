@@ -19,8 +19,6 @@ package org.komodo.rest;
 
 import java.io.IOException;
 
-import org.komodo.utils.ArgCheck;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,8 +49,6 @@ public final class KomodoJsonMarshaller {
      */
     public static String marshall( final Object entity,
                                    final boolean prettyPrint ) {
-        ArgCheck.isNotNull( entity, "entity" ); //$NON-NLS-1$
-
         try {
             if (prettyPrint) {
                 return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entity);

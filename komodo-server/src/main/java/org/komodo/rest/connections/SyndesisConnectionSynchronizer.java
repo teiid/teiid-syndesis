@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.komodo.KEngine;
 import org.komodo.KException;
+import org.komodo.RepositoryManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
@@ -44,13 +44,13 @@ public class SyndesisConnectionSynchronizer {
 
     private TeiidOpenShiftClient openshiftClient;
     private MetadataService metadataService;
-    private KEngine kengine;
+    private RepositoryManager repositoryManager;
 
     public SyndesisConnectionSynchronizer(@Autowired TeiidOpenShiftClient toc,
-            @Autowired MetadataService metadataService, @Autowired KEngine kengine) {
+            @Autowired MetadataService metadataService, @Autowired RepositoryManager repositoryManager) {
         this.openshiftClient = toc;
         this.metadataService = metadataService;
-        this.kengine = kengine;
+        this.repositoryManager = repositoryManager;
     }
 
     /*
@@ -117,14 +117,10 @@ public class SyndesisConnectionSynchronizer {
     }
 
     public void addConnection(DefaultSyndesisDataSource sds, boolean update) {
-        try {
-            // this is avoid circular creation of the virtualization connection that is
-            // published through syndesis
-            if (kengine.getWorkspaceManager().findDataVirtualizationBySourceId(sds.getSyndesisConnectionId()) != null) {
-                return;
-            }
-        } catch(KException e) {
-            LOGGER.warn("Error while adding a connection " + sds.getSyndesisName(), e);
+        // this is avoid circular creation of the virtualization connection that is
+        // published through syndesis
+        if (repositoryManager.findDataVirtualizationBySourceId(sds.getSyndesisConnectionId()) != null) {
+            return;
         }
 
         if (update) {

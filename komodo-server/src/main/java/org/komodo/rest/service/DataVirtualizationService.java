@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.komodo.KException;
 import org.komodo.StringConstants;
-import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
@@ -131,7 +130,7 @@ public final class DataVirtualizationService extends KomodoService {
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public List<RestDataVirtualization> getDataVirtualizations() throws Exception {
 
-        Iterable<? extends DataVirtualization> virtualizations = kengine.runInTransaction(true, ()->{
+        Iterable<? extends DataVirtualization> virtualizations = repositoryManager.runInTransaction(true, ()->{
             return getWorkspaceManager().findDataVirtualizations();
         });
 
@@ -175,7 +174,7 @@ public final class DataVirtualizationService extends KomodoService {
             required = true) final @PathVariable(VIRTUALIZATION) String virtualization)
             throws Exception {
 
-        DataVirtualization dv = kengine.runInTransaction(true, () -> {
+        DataVirtualization dv = repositoryManager.runInTransaction(true, () -> {
              return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(virtualization);
         });
 
@@ -186,7 +185,7 @@ public final class DataVirtualizationService extends KomodoService {
             }
 
             // check for duplicate name
-            final boolean inUse = kengine.runInTransaction(true, () -> {
+            final boolean inUse = repositoryManager.runInTransaction(true, () -> {
                 //from the pattern validation, there's no escaping necessary
                 return getWorkspaceManager().isNameInUse(virtualization);
             });
@@ -231,7 +230,7 @@ public final class DataVirtualizationService extends KomodoService {
 
         // create new virtualization
         try {
-            return kengine.runInTransaction(false, () -> {
+            return repositoryManager.runInTransaction(false, () -> {
                 final DataVirtualization dv = getWorkspaceManager().createDataVirtualization(restName);
                 dv.setDescription(restDataVirtualization.getDescription());
                 return ResponseEntity.ok(restName + " Successfully created");
@@ -255,11 +254,9 @@ public final class DataVirtualizationService extends KomodoService {
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public KomodoStatusObject deleteDataVirtualization(@ApiParam(value = "Name of the virtualization to be deleted", required = true) final @PathVariable(VIRTUALIZATION) String virtualization) throws Exception {
 
-        KomodoStatusObject kso = kengine.runInTransaction(false, ()->{
-            final WorkspaceManager wkspMgr = getWorkspaceManager();
-
+        KomodoStatusObject kso = repositoryManager.runInTransaction(false, ()->{
             // Delete the virtualization. The view definitions will cascade
-            if (!wkspMgr.deleteDataVirtualization(virtualization)) {
+            if (!repositoryManager.deleteDataVirtualization(virtualization)) {
                 throw notFound(virtualization);
             }
 
@@ -318,7 +315,7 @@ public final class DataVirtualizationService extends KomodoService {
             @RequestBody
             final ImportPayload importPayload) throws Exception {
 
-        KomodoStatusObject kso = kengine.runInTransaction(false, () -> {
+        KomodoStatusObject kso = repositoryManager.runInTransaction(false, () -> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(virtualization);
             if (dataservice == null) {
                 throw notFound( virtualization );
@@ -430,7 +427,7 @@ public final class DataVirtualizationService extends KomodoService {
             throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, virtualization, restName);
         }
 
-        return kengine.runInTransaction(false, () -> {
+        return repositoryManager.runInTransaction(false, () -> {
             // Error if the repo already contains a virtualization with the supplied name.
             DataVirtualization existing = getWorkspaceManager().findDataVirtualization(restDataVirtualization.getName());
             if (existing == null) {
@@ -462,7 +459,7 @@ public final class DataVirtualizationService extends KomodoService {
             required = true) final @PathVariable(VIRTUALIZATION) String virtualization)
             throws Exception {
 
-        DataVirtualizationV1Adapter result = kengine.runInTransaction(true, () -> {
+        DataVirtualizationV1Adapter result = repositoryManager.runInTransaction(true, () -> {
             DataVirtualization dv = getWorkspaceManager().findDataVirtualization(virtualization);
 
             if (dv == null) {
@@ -568,7 +565,7 @@ public final class DataVirtualizationService extends KomodoService {
         KomodoStatusObject kso = new KomodoStatusObject("import result"); //$NON-NLS-1$
 
         try {
-            kengine.runInTransaction(false, () -> {
+            repositoryManager.runInTransaction(false, () -> {
                 for (SourceV1 source : dv.getSources()) {
                     TeiidDataSource tds = metadataService.findTeiidDatasource(source.getName());
                     if (tds == null) {
@@ -622,7 +619,7 @@ public final class DataVirtualizationService extends KomodoService {
             @ApiParam(value = "Name of the virtualization", required = true)
             final @PathVariable(VIRTUALIZATION) String virtualization) throws Exception {
         // find view editor states
-        return kengine.runInTransaction(true, ()->{
+        return repositoryManager.runInTransaction(true, ()->{
 
             final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().findViewDefinitions( virtualization );
             LOGGER.debug( "getViewEditorStates:found %d ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
@@ -680,7 +677,7 @@ public final class DataVirtualizationService extends KomodoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, errorMsg);
         }
 
-        ViewDefinition vd = kengine.runInTransaction(true, ()-> {
+        ViewDefinition vd = repositoryManager.runInTransaction(true, ()-> {
             return getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
         });
 
@@ -729,7 +726,7 @@ public final class DataVirtualizationService extends KomodoService {
             throw forbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
         }
 
-        return kengine.runInTransaction(true, ()-> {
+        return repositoryManager.runInTransaction(true, ()-> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
             if (dataservice == null) {
                 throw notFound(payload.getName());

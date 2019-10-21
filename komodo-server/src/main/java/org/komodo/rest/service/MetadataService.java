@@ -31,7 +31,6 @@ import javax.annotation.PostConstruct;
 
 import org.komodo.KException;
 import org.komodo.StringConstants;
-import org.komodo.WorkspaceManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
@@ -214,8 +213,8 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
     }
 
     protected TeiidVdb updatePreviewVdb(String dvName) throws Exception {
-        return kengine.runInTransaction(true, ()->{
-            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dvName);
+        return repositoryManager.runInTransaction(true, ()->{
+            DataVirtualization dv = repositoryManager.findDataVirtualization(dvName);
             if (dv == null) {
                 throw notFound(dvName);
             }
@@ -236,7 +235,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
                     return vdb;
                 }
                 VDBMetaData theVdb = new ServiceVdbGenerator(this)
-                        .createPreviewVdb(dvName, serviceVdbName, getWorkspaceManager().findViewDefinitions(dvName));
+                        .createPreviewVdb(dvName, serviceVdbName, repositoryManager.findViewDefinitions(dvName));
                 theVdb.addProperty(VERSION_PROPERTY, dv.getVersion().toString());
 
                 synchronized (masterLock) {
@@ -282,7 +281,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
             throw notFound(teiidSourceName);
         }
 
-        kengine.runInTransaction(true, () -> {
+        repositoryManager.runInTransaction(true, () -> {
             doDeploySourceVdb(teiidSource, sourceDeploymentMode);
             return null;
         });
@@ -290,10 +289,8 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
 
     public boolean deleteSchema(DefaultSyndesisDataSource dsd) throws Exception {
         //TODO: this can invalidate a lot of stuff
-        boolean result = kengine.runInTransaction(false, () -> {
-            final WorkspaceManager mgr = kengine.getWorkspaceManager();
-
-            return mgr.deleteSchemaBySourceId(dsd.getSyndesisConnectionId());
+        boolean result = repositoryManager.runInTransaction(false, () -> {
+            return repositoryManager.deleteSchemaBySourceId(dsd.getSyndesisConnectionId());
         });
 
         if (result) {
@@ -347,8 +344,8 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
                     }
                     boolean updateSource = false;
                     try {
-                        updateSource = kengine.runInTransaction(false, () -> {
-                            SourceSchema schema = kengine.getWorkspaceManager().findSchemaBySourceId(vdb.getVDB().getPropertyValue(TeiidOpenShiftClient.ID));
+                        updateSource = repositoryManager.runInTransaction(false, () -> {
+                            SourceSchema schema = repositoryManager.findSchemaBySourceId(vdb.getVDB().getPropertyValue(TeiidOpenShiftClient.ID));
                             if (schema != null) {
                                 String ddl = schema.getDdl();
                                 if (!Objects.equals(ddl, modelDdl)) {
@@ -397,7 +394,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
     } )
     public List<RestSchemaNode> getSchema(@ApiParam( value = "Name of the teiid source", required = true )
                                @PathVariable(TEIID_SOURCE) final String teiidSourceName ) throws Exception {
-        return kengine.runInTransaction(true, ()->{
+        return repositoryManager.runInTransaction(true, ()->{
             // Find the bound teiid source corresponding to the syndesis source
             TeiidDataSource teiidSource = getMetadataInstance().getDataSource(teiidSourceName);
 
@@ -431,7 +428,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
         @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
     } )
     public List<RestSchemaNode> getAllConnectionSchema() throws Exception {
-        return kengine.runInTransaction(true, ()->{
+        return repositoryManager.runInTransaction(true, ()->{
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
 
             // Get teiid datasources
@@ -475,8 +472,8 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
 
         final List< RestSyndesisSourceStatus > statuses = new ArrayList<>();
 
-        return kengine.runInTransaction(true, ()->{
-            for (String komodoName : kengine.getWorkspaceManager().findAllSchemaNames()) {
+        return repositoryManager.runInTransaction(true, ()->{
+            for (String komodoName : repositoryManager.findAllSchemaNames()) {
                 TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoName);
                 RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(komodoName);
                 if (teiidSource != null) {
@@ -560,9 +557,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
         }
 
         // VDB is created in the repository.  If it already exists, delete it
-        final WorkspaceManager mgr = this.getWorkspaceManager();
-
-        SourceSchema schema = mgr.findSchemaBySourceId(teiidSource.getSyndesisId());
+        SourceSchema schema = repositoryManager.findSchemaBySourceId(teiidSource.getSyndesisId());
         if (schema == null) {
             //something is wrong, the logic that creates TeiidDataSources will always ensure
             //a sourceschema is created
@@ -820,7 +815,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
      */
     private void setSchemaStatus(String schemaId, final RestSyndesisSourceStatus status ) throws Exception {
         // Get the workspace schema VDB
-        SourceSchema schema = getWorkspaceManager().findSchemaBySourceId(schemaId);
+        SourceSchema schema = repositoryManager.findSchemaBySourceId(schemaId);
         status.setId(schemaId);
 
         if ( schema != null && schema.getDdl() != null) {

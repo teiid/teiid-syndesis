@@ -22,8 +22,7 @@ import java.io.StringReader;
 
 import javax.annotation.PostConstruct;
 
-import org.komodo.KEngine;
-import org.komodo.KException;
+import org.komodo.RepositoryManager;
 import org.komodo.datavirtualization.SourceSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +39,7 @@ public class DDLDBMetadataRepository implements MetadataRepository<Object, Objec
     @Autowired
     private TeiidServer teiidServer;
     @Autowired
-    private KEngine kEngine;
+    private RepositoryManager repositoryManager;
 
     @PostConstruct
     public void init() {
@@ -51,13 +50,9 @@ public class DDLDBMetadataRepository implements MetadataRepository<Object, Objec
     public void loadMetadata(MetadataFactory factory,
             ExecutionFactory<Object, Object> executionFactory, Object connectionFactory,
             String text) throws TranslatorException {
-        try {
-            SourceSchema schema = kEngine.getWorkspaceManager().findSchemaBySourceId(text);
-            if (schema != null && schema.getDdl() != null) {
-                factory.parse(new StringReader(schema.getDdl()));
-            }
-        } catch (KException e) {
-            throw new TranslatorException(e);
+        SourceSchema schema = repositoryManager.findSchemaBySourceId(text);
+        if (schema != null && schema.getDdl() != null) {
+            factory.parse(new StringReader(schema.getDdl()));
         }
     }
 

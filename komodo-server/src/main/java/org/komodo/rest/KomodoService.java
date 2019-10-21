@@ -17,9 +17,7 @@
  */
 package org.komodo.rest;
 
-import org.komodo.KEngine;
-import org.komodo.KException;
-import org.komodo.WorkspaceManager;
+import org.komodo.RepositoryManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.KLog;
@@ -62,14 +60,14 @@ public abstract class KomodoService implements V1Constants {
     protected CredentialsProvider credentialsProvider;
 
     @Autowired
-    protected KEngine kengine;
+    protected RepositoryManager repositoryManager;
 
     protected OAuthCredentials getAuthenticationToken() {
         return credentialsProvider.getCredentials();
     }
 
-    protected WorkspaceManager getWorkspaceManager() throws KException {
-        return this.kengine.getWorkspaceManager();
+    protected RepositoryManager getWorkspaceManager() {
+        return this.repositoryManager;
     }
 
     public static ResponseStatusException notFound(String resourceName) {

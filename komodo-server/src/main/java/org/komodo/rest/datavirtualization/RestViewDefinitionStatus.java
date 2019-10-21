@@ -18,7 +18,7 @@
 package org.komodo.rest.datavirtualization;
 
 import org.komodo.datavirtualization.ViewDefinition;
-import org.komodo.utils.ArgCheck;
+import org.teiid.core.util.ArgCheck;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

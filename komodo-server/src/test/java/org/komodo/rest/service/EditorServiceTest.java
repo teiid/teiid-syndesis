@@ -26,8 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.repository.KomodoRepositoryConfiguration;
-import org.komodo.repository.WorkspaceManagerImpl;
+import org.komodo.repository.RepositoryConfiguration;
+import org.komodo.repository.RepositoryManagerImpl;
 import org.komodo.rest.datavirtualization.ViewListing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -42,7 +42,7 @@ import org.teiid.adminapi.impl.VDBMetaData;
 @SuppressWarnings("nls")
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
+@ContextConfiguration(classes = {RepositoryConfiguration.class, ServiceTestConfiguration.class})
 public class EditorServiceTest {
 
     @Autowired
@@ -58,11 +58,11 @@ public class EditorServiceTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private WorkspaceManagerImpl workspaceManagerImpl;
+    private RepositoryManagerImpl repositoryManager;
 
     @Test public void testStash() throws Exception {
 
-        workspaceManagerImpl.createDataVirtualization("x");
+        repositoryManager.createDataVirtualization("x");
 
         ViewDefinition vd = new ViewDefinition("x", "y");
 
@@ -106,7 +106,7 @@ public class EditorServiceTest {
         assertEquals(Long.valueOf(1), saved.getVersion());
         assertNotNull(saved.getId());
 
-        ViewDefinition found = workspaceManagerImpl.findViewDefinition(saved.getId());
+        ViewDefinition found = repositoryManager.findViewDefinition(saved.getId());
         assertEquals("create something", found.getDdl());
 
         //saving with valid ddl

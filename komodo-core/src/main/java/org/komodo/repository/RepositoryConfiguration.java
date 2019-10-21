@@ -30,7 +30,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories
 @EntityScan(basePackageClasses = ViewDefinition.class)
 @ComponentScan
-public class KomodoRepositoryConfiguration {
+public class RepositoryConfiguration {
 
     /*
      * added for the spring boot 2 upgrade of flyway

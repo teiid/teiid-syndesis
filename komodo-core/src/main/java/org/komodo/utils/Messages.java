@@ -32,43 +32,6 @@ public class Messages implements StringConstants {
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
     @SuppressWarnings( "javadoc" )
-    public enum ArgCheck {
-        isNonNegativeInt,
-        isNonPositiveInt,
-        isNegativeInt,
-        isPositiveInt,
-        isStringNonZeroLength,
-        isNonNull,
-        isNull,
-        isInstanceOf,
-        isCollectionNotEmpty,
-        isMapNotEmpty,
-        isArrayNotEmpty,
-        isNotSame,
-        contains,
-        containsKey,
-        isPropertiesNotEmpty,
-        invalidClassMessage,
-        isEqual,
-        isNotEqual,
-        isNonNegative,
-        isNonPositive,
-        isNegative,
-        isPositive,
-        isNotZeroLength,
-        isIdentical,
-        isNotEmpty_Collection,
-        isNotEmpty_Map,
-        contains_Collection,
-        contains_Map;
-
-        @Override
-        public String toString() {
-            return getEnumName(this) + DOT + name();
-        }
-    }
-
-    @SuppressWarnings( "javadoc" )
     public enum StringNameValidator {
         minLengthFailure,
         nameLengthLongerThanAllowed,

@@ -40,7 +40,7 @@ public class DataVirtualizationTest {
     private DataVirtualizationRepository dataVirtualizationRepository;
 
     @Autowired
-    private WorkspaceManagerImpl workspaceManagerImpl;
+    private RepositoryManagerImpl workspaceManagerImpl;
 
     @Test
     public void testFindDeleteByName() {

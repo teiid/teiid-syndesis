@@ -21,13 +21,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.transaction.TransactionManager;
 
-import org.komodo.KEngine;
+import org.komodo.RepositoryManager;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidServer;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.repository.WorkspaceManagerImpl;
+import org.komodo.repository.RepositoryManagerImpl;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +50,7 @@ import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
 @EnableConfigurationProperties({KomodoConfigurationProperties.class, SpringMavenProperties.class})
-@ComponentScan(basePackageClasses = {WorkspaceManagerImpl.class, DefaultMetadataInstance.class, SyndesisConnectionSynchronizer.class})
+@ComponentScan(basePackageClasses = {RepositoryManagerImpl.class, DefaultMetadataInstance.class, SyndesisConnectionSynchronizer.class})
 @EnableAsync
 public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent>, AsyncConfigurer {
 
@@ -67,7 +67,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     private SpringMavenProperties maven;
 
     @Autowired
-    private KEngine kengine;
+    private RepositoryManager repositoryManager;
 
     @Autowired
     private MetadataInstance metadataInstance;
@@ -87,7 +87,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         try {
-            kengine.start();
+            repositoryManager.findDataVirtualization("x");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -114,9 +114,9 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 
     @Bean
     @ConditionalOnMissingBean
-    public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
+    public TeiidOpenShiftClient openShiftClient(@Autowired RepositoryManager repositoryManager, @Autowired TextEncryptor enc) {
         return new TeiidOpenShiftClient(metadataInstance, new EncryptionComponent(enc),
-                this.config, kengine, this.maven == null ? null : this.maven.getRepositories());
+                this.config, repositoryManager, this.maven == null ? null : this.maven.getRepositories());
     }
 
     @Bean

@@ -38,7 +38,7 @@ public class SourceSchemaTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private WorkspaceManagerImpl workspaceManagerImpl;
+    private RepositoryManagerImpl workspaceManagerImpl;
 
     @Test
     public void testFindDeleteByName() {

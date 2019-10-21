@@ -30,10 +30,6 @@ public class KException extends Exception {
      */
     public KException( final String message ) {
         super(message);
-
-        if ((message == null) || message.isEmpty()) {
-            throw new IllegalArgumentException(Messages.getString(Messages.SPI.valueCannotBeEmpty, "message")); //$NON-NLS-1$
-        }
     }
 
     /**
@@ -45,14 +41,6 @@ public class KException extends Exception {
     public KException( final String message,
                        final Throwable cause ) {
         super(message, cause);
-
-        if ((message == null) || message.isEmpty()) {
-            throw new IllegalArgumentException(Messages.getString(Messages.SPI.valueCannotBeEmpty, "message")); //$NON-NLS-1$
-        }
-
-        if (cause == null) {
-            throw new IllegalArgumentException(Messages.getString(Messages.SPI.valueCannotBeNull, "cause")); //$NON-NLS-1$
-        }
     }
 
     /**
@@ -61,10 +49,6 @@ public class KException extends Exception {
      */
     public KException( final Throwable cause ) {
         super(cause);
-
-        if (cause == null) {
-            throw new IllegalArgumentException(Messages.getString(Messages.SPI.valueCannotBeNull, "cause")); //$NON-NLS-1$
-        }
     }
 
 }

@@ -86,7 +86,7 @@ public final class EditorService extends KomodoService {
     public RestViewDefinitionStatus getViewDefinition(
             @ApiParam(value = "Name of the view editor state to fetch", required = true)
             final @PathVariable(ID) String viewEditorStateId) throws Exception {
-        return kengine.runInTransaction(true, ()->{
+        return repositoryManager.runInTransaction(true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found %d ViewEditorStates", //$NON-NLS-1$
                               viewEditorState == null ? 0 : 1 );
@@ -131,7 +131,7 @@ public final class EditorService extends KomodoService {
         //had captured the inputs
         RestViewDefinitionStatus validated = validateViewDefinition(restViewEditorState);
 
-        ViewDefinition vd = kengine.runInTransaction(false, ()->{
+        ViewDefinition vd = repositoryManager.runInTransaction(false, ()->{
             return upsertViewEditorState(restViewEditorState);
         });
 
@@ -341,7 +341,7 @@ public final class EditorService extends KomodoService {
             @ApiParam(value = "Id of the view editor state to remove", required = true)
             final @PathVariable(V1Constants.ID) String viewEditorStateId)
             throws Exception {
-        return kengine.runInTransaction(false, ()-> {
+        return repositoryManager.runInTransaction(false, ()-> {
             ViewDefinition vd = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             if (vd == null) {
                 throw notFound(viewEditorStateId);

@@ -19,17 +19,31 @@
 package org.komodo.repository;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
-import org.komodo.WorkspaceManager;
+import org.komodo.RepositoryManager;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
+import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.TransactionTimedOutException;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Component
-public class WorkspaceManagerImpl implements WorkspaceManager {
+public class RepositoryManagerImpl implements RepositoryManager {
+
+    private static DefaultTransactionDefinition NEW_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
+    static {
+        NEW_TRANSACTION_DEFINITION.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+    }
+
+    protected static final KLog LOGGER = KLog.getLogger();
 
     @Autowired
     private DataVirtualizationRepository dataVirtualizationRepository;
@@ -37,6 +51,40 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     private SourceSchemaRepository schemaRepository;
     @Autowired
     private ViewDefinitionRepository viewDefinitionRepository;
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
+
+    @Override
+    public <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception {
+        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
+        if (rollbackOnly) {
+            transactionStatus.setRollbackOnly();
+        }
+        String txnName = null;
+        if (LOGGER.isDebugEnabled()) {
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            txnName = stackTraceElements[2].getMethodName();
+        }
+        LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", txnName, rollbackOnly ); //$NON-NLS-1$
+        try {
+            T result = callable.call();
+            if (!rollbackOnly) {
+                try {
+                    platformTransactionManager.commit(transactionStatus);
+                    LOGGER.debug( "commit: successfully committed '%s'", //$NON-NLS-1$
+                            txnName);
+                } catch (TransactionTimedOutException e) {
+                    throw new TimeoutException(e);
+                }
+                //any other exceptions can be unchecked
+            }
+            return result;
+        } finally {
+            if (!transactionStatus.isCompleted()) {
+                platformTransactionManager.rollback(transactionStatus);
+            }
+        }
+    }
 
     @Override
     public org.komodo.datavirtualization.SourceSchema findSchemaBySourceId(String id) {

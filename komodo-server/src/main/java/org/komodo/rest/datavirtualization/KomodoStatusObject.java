@@ -20,7 +20,7 @@ package org.komodo.rest.datavirtualization;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.komodo.utils.ArgCheck;
+import org.teiid.core.util.ArgCheck;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

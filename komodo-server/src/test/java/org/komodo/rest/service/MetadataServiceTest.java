@@ -18,11 +18,10 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.KException;
@@ -30,8 +29,8 @@ import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
-import org.komodo.repository.KomodoRepositoryConfiguration;
-import org.komodo.repository.WorkspaceManagerImpl;
+import org.komodo.repository.RepositoryConfiguration;
+import org.komodo.repository.RepositoryManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.connection.RestSchemaNode;
@@ -46,11 +45,11 @@ import org.teiid.adminapi.impl.VDBMetaData;
 @SuppressWarnings({ "javadoc", "nls" })
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
+@ContextConfiguration(classes = {RepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 public class MetadataServiceTest {
     @Autowired
-    private WorkspaceManagerImpl workspaceManagerImpl;
+    private RepositoryManagerImpl repositoryManagerImpl;
 
     @Autowired
     private MetadataService komodoMetadataService;
@@ -117,7 +116,7 @@ public class MetadataServiceTest {
         DefaultSyndesisDataSource sds = DataVirtualizationServiceTest.createH2DataSource("source2");
         metadataInstance.registerDataSource(sds);
 
-        workspaceManagerImpl.createSchema("someid", "source",
+        repositoryManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
 
@@ -160,7 +159,7 @@ public class MetadataServiceTest {
         metadataInstance.registerDataSource(sds);
 
 
-        workspaceManagerImpl.createSchema("someid", "source3",
+        repositoryManagerImpl.createSchema("someid", "source3",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'collection=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'collection=bar1');");
 
@@ -188,7 +187,7 @@ public class MetadataServiceTest {
         kqa.setQuery("select * from myview");
         kqa.setTarget("dv1");
 
-        workspaceManagerImpl.createDataVirtualization("dv1");
+        repositoryManagerImpl.createDataVirtualization("dv1");
 
         //get rid of the default preview vdb
         metadataInstance.undeployDynamicVdb(EditorService.PREVIEW_VDB);

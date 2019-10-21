@@ -17,6 +17,8 @@
  */
 package org.komodo.utils;
 
+import org.teiid.core.util.ArgCheck;
+
 /**
  * StringNameValidator
  *

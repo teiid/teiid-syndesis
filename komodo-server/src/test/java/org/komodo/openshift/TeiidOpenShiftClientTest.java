@@ -23,9 +23,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.Callable;
 
 import org.junit.Test;
-import org.komodo.KEngine;
-import org.komodo.KException;
-import org.komodo.WorkspaceManager;
+import org.komodo.RepositoryManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.rest.KomodoConfigurationProperties;
@@ -33,26 +31,22 @@ import org.mockito.Mockito;
 
 public class TeiidOpenShiftClientTest {
 
+    static abstract class MockRepositoryManager implements RepositoryManager {
+
+        @Override
+        public <T> T runInTransaction(boolean rollbackOnly,
+                Callable<T> callable) throws Exception {
+            return callable.call();
+        }
+    }
+
     @Test public void testSetKomodoName() throws Exception {
         MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
 
-        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), new KEngine() {
+        RepositoryManager mock = Mockito.mock(RepositoryManager.class);
+        Mockito.when(mock.runInTransaction(Mockito.anyBoolean(), Mockito.any())).thenCallRealMethod();
 
-            @Override
-            public void start() throws Exception {
-
-            }
-
-            @Override
-            public <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception {
-                return callable.call();
-            }
-
-            @Override
-            public WorkspaceManager getWorkspaceManager() throws KException {
-                return Mockito.mock(WorkspaceManager.class);
-            }
-        }, null);
+        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), mock, null);
 
         DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
 
