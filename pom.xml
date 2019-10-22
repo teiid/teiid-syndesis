@@ -22,7 +22,7 @@
     <version>28</version>
   </parent>
 
-  <groupId>io.syndesis.dv</groupId>
+  <groupId>org.teiid</groupId>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dv-server</artifactId>
   <version>1.9-SNAPSHOT</version>
@@ -816,7 +816,7 @@
         <version>${version.org.mockito}</version>
       </dependency>
       <dependency>
-        <groupId>io.syndesis.dv</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>dv-server</artifactId>
         <version>${project.version}</version>
       </dependency>

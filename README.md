@@ -71,7 +71,7 @@ The image generated will be the new `syndesis-dv` image
 #### Remote Debugging
 To enable the debugging of "syndesis-dv" instance, go to the OpenShift console where the application is deployed, and in the `syndesis-dv` deployment config's Environment variables add `JAVA_DEBUG` to `true` and then recyle the current pod such that new pod will be generated with new environment property.
 
-The built images are deployed with java virtual machine debugging enabled, using port 5005. This allows for developers to remotely connect to the running vdb-builder using an IDE like [Eclipse](https://www.eclipse.org).
+The built images are deployed with java virtual machine debugging enabled, using port 5005. This allows for developers to remotely connect to the running dv using an IDE like [Eclipse](https://www.eclipse.org).
 
 The port 5005 is not offered by any of the routes, although a route can be setup if preferred. A quick alternative is to [port-forward](https://docs.openshift.com/enterprise/3.0/dev_guide/port_forwarding.html) the port to the localhost using the following command:
 
@@ -79,9 +79,9 @@ The port 5005 is not offered by any of the routes, although a route can be setup
 
 > oc port-forward syndesis-dv-x-yyyy 5005:5005
 
-where *vdb-builder-x-yyyy* is the latest deployed `syndesis-dv` pod.
+where *dv-x-yyyy* is the latest deployed `syndesis-dv` pod.
 
-If using Eclipse, open the _Debugging Configurations_ window and create a new _Remote Java Application_ configuration. Setting the host to **localhost** and the port to **5005**, the configuration can then be executed. The debug perspective will indicate the connection has been successfully undertaken and all breakpoints will be fired by the vdb-builder image.
+If using Eclipse, open the _Debugging Configurations_ window and create a new _Remote Java Application_ configuration. Setting the host to **localhost** and the port to **5005**, the configuration can then be executed. The debug perspective will indicate the connection has been successfully undertaken and all breakpoints will be fired by the dv image.
 
 #### Troubleshooting
 
