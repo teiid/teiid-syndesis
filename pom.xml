@@ -22,11 +22,11 @@
     <version>28</version>
   </parent>
 
-  <groupId>org.teiid</groupId>
+  <groupId>io.syndesis.dv</groupId>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>komodo-server</artifactId>
+  <artifactId>dv-server</artifactId>
   <version>1.9-SNAPSHOT</version>
-  <name>Komodo Server</name>
+  <name>DV Server</name>
 
   <packaging>jar</packaging>
   <description>Tool that allows creating, editing and managing dynamic VDBs for the Teiid OpenShift Deployment.</description>
@@ -125,7 +125,7 @@
   <scm>
     <connection>scm:git:git://github.com/teiid/teiid-syndesis.git</connection>
     <developerConnection>scm:git:git@github.com:teiid/teiid-syndesis.git</developerConnection>
-    <url>http://github.com/teiid/teiid-komodo</url>
+    <url>http://github.com/teiid/teiid-syndesis</url>
   </scm>
   
   <distributionManagement>
@@ -198,7 +198,6 @@
     <basepom.git-id.skip>true</basepom.git-id.skip>
     <basepom.test.fork-count>1</basepom.test.fork-count>
 
-    <!-- originally these were in komodo-server only but travis is getting struck -->
     <basepom.check.skip-dependency>true</basepom.check.skip-dependency>
     <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
     <basepom.check.skip-dependency-management>true</basepom.check.skip-dependency-management>  
@@ -248,7 +247,7 @@
     <version.org.hamcrest>1.3</version.org.hamcrest> <!-- tesing only -->
     <arquillian.version>1.4.0.Final</arquillian.version>
 
-    <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml -->
+    <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At s2i -->
     <spring-boot.version>2.1.7.RELEASE</spring-boot.version>
     <!-- this is simply a version no dependencies involved right now -->
     <version.springboot.teiid>1.2.0</version.springboot.teiid>
@@ -511,7 +510,7 @@
               <ignoredResourcePattern>git.properties</ignoredResourcePattern>
             </ignoredResourcePatterns>
             <exceptions>
-              <!-- TODO: Comeup with komodo list
+              <!-- TODO
               <exception>               
                 <conflictingDependencies>
                   <dependency>
@@ -817,8 +816,8 @@
         <version>${version.org.mockito}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-server</artifactId>
+        <groupId>io.syndesis.dv</groupId>
+        <artifactId>dv-server</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
