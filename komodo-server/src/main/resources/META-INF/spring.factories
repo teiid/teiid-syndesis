@@ -1,6 +1,0 @@
-# Configurations
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.komodo.rest.KomodoAutoConfiguration
-
-
-# Listeners

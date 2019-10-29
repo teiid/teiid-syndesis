@@ -11,7 +11,7 @@ cache:
   - "$HOME/.m2"
 
 before_install:
-  - rm -rf $HOME/.m2/repository/org/teiid/komodo*
+  - rm -rf $HOME/.m2/repository/io/syndesis/dv*
 
 install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Pimage -Dfabric8.mode=kubernetes
 
