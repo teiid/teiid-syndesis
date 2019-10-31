@@ -4,7 +4,7 @@ teiid-syndesis
 
 Teiid tooling is now part of the [Syndesis](https://syndesis.io) project. This works a component inside Syndesis to provide data integration capabilities. This document is for developers who like to setup a workspace locally for testing or for development purposes.
 
-## Prerquisites for Developers
+## Prerequisites for Developers
 - Install JDK 1.8 or higher
 - Install [maven 3.2+](http://maven.apache.org/download.html)
 - Install [Go Lang](https://developer.fedoraproject.org/tech/languages/go/go-installation.html) These instructions are for Linux, find similar for your platform.
@@ -32,7 +32,7 @@ tools/bin/syndesis minishift --install --project syndesis --full-reset --memory 
 
 oc login -u system:admin
 ```
-Note: If you are devloper and want your locally built images to be deployed to this minishift instance, then change `--nodev` in above command to `--dev`, however this will end up with few images in not started position. To fix that, you can do
+Note: If you are developer and want your locally built images to be deployed to this minishift instance, then change `--nodev` in above command to `--dev`, however this will end up with few images in not started position. To fix that, you can do
 ```
 cd teiid-syndesis
 ./fix4dev.sh
@@ -49,7 +49,7 @@ oc project syndesis (if current project is myproject)
 mvn install -Pimage [-DskipTests]
 ```
 
-Once the above build is done, it will replace the existing `syndesis-dv` instance with lastest one that has been just built with your latest changes.
+Once the above build is done, it will replace the existing `syndesis-dv` instance with latest one that has been just built with your latest changes.
 
 ### Avoid updating with remote instance when working locally
 When working in the development mode, the server image will automatically will be replaced with one in the Docker repo in 15 minutes, to avoid it run the following on your OpenShift after above installation.
@@ -69,7 +69,7 @@ mvn install -Pimage [-DskipTests]
 The image generated will be the new `syndesis-dv` image
 
 #### Remote Debugging
-To enable the debugging of "syndesis-dv" instance, go to the OpenShift console where the application is deployed, and in the `syndesis-dv` deployment config's Environment variables add `JAVA_DEBUG` to `true` and then recyle the current pod such that new pod will be generated with new environment property.
+To enable the debugging of "syndesis-dv" instance, go to the OpenShift console where the application is deployed, and in the `syndesis-dv` deployment config's Environment variables add `JAVA_DEBUG` to `true` and then recycle the current pod such that new pod will be generated with new environment property.
 
 The built images are deployed with java virtual machine debugging enabled, using port 5005. This allows for developers to remotely connect to the running dv using an IDE like [Eclipse](https://www.eclipse.org).
 
@@ -88,8 +88,8 @@ If using Eclipse, open the _Debugging Configurations_ window and create a new _R
 ##### Hostname 
 In Minishift, the VM is unable to see hostnames documented in the host OS' /etc/hosts file yet it is possible to resolve IP addresses. Only if the hostnames are inserted in the VM's own /etc/hosts will they be resolved correctly.
 
-##### Openshift Storage Space
-Openshift and Docker are responsible for generating a significant amount of content which can fill up HDD space, including docker images and persistent volumes. If space becomes too low then errors can start to appear. Cleaning up docker images in Minishift can require secure-shell into the VM then manually deleting the images using the native docker commands. Likewise, persistent volumes can require manually deletion of their directories.
+##### OpenShift Storage Space
+OpenShift and Docker are responsible for generating a significant amount of content which can fill up HDD space, including docker images and persistent volumes. If space becomes too low then errors can start to appear. Cleaning up docker images in Minishift can require secure-shell into the VM then manually deleting the images using the native docker commands. Likewise, persistent volumes can require manually deletion of their directories.
 
 ##### Memory and Storage Capacity Variables
 By default, Minishift starts with 2GB of memory and 20GB of storage. This can quickly prove insufficient for developing syndesis-dv. It is advisable to increase these values, eg.
@@ -106,7 +106,7 @@ Licenses
 
 The default license is the [Apache Software License (ASL) v2.0][1]
 
-Where applicable individual modules or javascript libraries will provide other copyright and license information.
+Where applicable individual modules or JavaScript libraries will provide other copyright and license information.
 
 [1]: view-source:https://www.apache.org/licenses/LICENSE-2.0
 =======
