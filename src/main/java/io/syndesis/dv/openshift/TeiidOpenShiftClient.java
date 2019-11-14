@@ -282,10 +282,9 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
 
     private static final String DESCRIPTION_ANNOTATION_LABEL = "description";
+    private static final String DEPLOYMENT_VERSION_LABEL = "syndesis.io/deployment-version";
 
     private static final String SERVICE_DESCRIPTION = "Virtual Database (VDB)";
-
-    private static final Log logger = LogFactory.getLog(TeiidOpenShiftClient.class);
 
     private static final String SYSDESIS = "syndesis";
     private static final String MANAGED_BY = "managed-by";
@@ -336,7 +335,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             File loggerPath = File.createTempFile("vdb-", "log");
             parentDir = loggerPath.getParent();
         } catch(Exception ex) {
-            logger.error("Failure to get logger path", ex);
+            LOGGER.error("Failure to get logger path", ex);
             parentDir = System.getProperty(JAVA_IO_TMPDIR);
         }
 
@@ -387,27 +386,27 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
 
     private void debug(String id, String message) {
-        if (! logger.isDebugEnabled())
+        if (! LOGGER.isDebugEnabled())
             return;
 
-        logger.debug(message);
+        LOGGER.debug(message);
         addLog(id, message);
     }
 
     private void error(String id, String message, Throwable ex) {
-        logger.error(message, ex);
+        LOGGER.error(message, ex);
         String cause = StringUtils.exceptionToString(ex);
         addLog(id, message);
         addLog(id,cause);
     }
 
     private void error(String id, String message) {
-        logger.error(message);
+        LOGGER.error(message);
         addLog(id, message);
     }
 
     private void info(String id, String message) {
-        logger.info(message);
+        LOGGER.info(message);
         addLog(id, message);
     }
 
@@ -808,6 +807,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                   .addToLabels("application", config.getOpenShiftName())
                   .addToLabels("deploymentConfig", config.getOpenShiftName())
                   .addToLabels("syndesis.io/type", "datavirtualization")
+                  .addToLabels(DEPLOYMENT_VERSION_LABEL, String.valueOf(config.getDeploymentVersion()))
                   .addToAnnotations("prometheus.io/scrape", "true")
                   .addToAnnotations("prometheus.io/port", "9779")
                 .endMetadata()
@@ -1062,6 +1062,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         work.setLastUpdated();
         work.setPublishConfiguration(publishConfig);
         work.setDataVirtualizationName(publishConfig.getDataVirtualizationName());
+        work.setDeploymentVersion(publishConfig.getPublishedRevision());
         this.workExecutor.submit(new BuildStatusRunner(work));
         return work;
     }
@@ -1360,6 +1361,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         if ((buildList !=null) && !buildList.getItems().isEmpty()) {
             Build build = buildList.getItems().get(0);
             status.setName(build.getMetadata().getName());
+            String deploymentVersion = build.getMetadata().getLabels().get(DEPLOYMENT_VERSION_LABEL);
+            if (deploymentVersion != null) {
+                try {
+                    status.setDeploymentVersion(Long.valueOf(deploymentVersion));
+                } catch (NumberFormatException e) {
+                    LOGGER.error("unexpected value for deployment-version", e);
+                }
+            }
             if (Builds.isCancelled(build.getStatus().getPhase())) {
                 status.setStatus(Status.CANCELLED);
                 status.setStatusMessage(build.getStatus().getMessage());

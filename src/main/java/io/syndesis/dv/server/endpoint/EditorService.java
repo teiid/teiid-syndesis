@@ -19,15 +19,6 @@ package io.syndesis.dv.server.endpoint;
 
 import java.util.Objects;
 
-import io.syndesis.dv.metadata.MetadataInstance;
-import io.syndesis.dv.metadata.MetadataInstance.ValidationResult;
-import io.syndesis.dv.model.DataVirtualization;
-import io.syndesis.dv.model.ViewDefinition;
-import io.syndesis.dv.server.DvService;
-import io.syndesis.dv.server.Messages;
-import io.syndesis.dv.server.V1Constants;
-import io.syndesis.dv.metadata.TeiidVdb;
-import io.syndesis.dv.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,6 +39,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.syndesis.dv.metadata.MetadataInstance;
+import io.syndesis.dv.metadata.MetadataInstance.ValidationResult;
+import io.syndesis.dv.metadata.TeiidVdb;
+import io.syndesis.dv.model.DataVirtualization;
+import io.syndesis.dv.model.ViewDefinition;
+import io.syndesis.dv.server.DvService;
+import io.syndesis.dv.server.Messages;
+import io.syndesis.dv.server.V1Constants;
+import io.syndesis.dv.utils.StringUtils;
 
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
@@ -316,7 +316,7 @@ public final class EditorService extends DvService {
 
             if (updateDv) {
                 DataVirtualization dv = getWorkspaceManager().findDataVirtualization(viewDefn.getDataVirtualizationName());
-                dv.setModifiedAt(null); //effectively a touch to increment version/modification date
+                dv.touch();
             }
         }
 
@@ -346,7 +346,7 @@ public final class EditorService extends DvService {
             }
             if (vd.isComplete() && vd.isParsable()) {
                 DataVirtualization dv = getWorkspaceManager().findDataVirtualization(vd.getDataVirtualizationName());
-                dv.setModifiedAt(null);
+                dv.touch();
             }
 
             getWorkspaceManager().deleteViewDefinition(viewEditorStateId);

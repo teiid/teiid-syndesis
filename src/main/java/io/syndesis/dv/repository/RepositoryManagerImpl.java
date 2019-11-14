@@ -21,7 +21,6 @@ package io.syndesis.dv.repository;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import io.syndesis.dv.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -33,8 +32,10 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import io.syndesis.dv.RepositoryManager;
 import io.syndesis.dv.model.DataVirtualization;
+import io.syndesis.dv.model.Edition;
 import io.syndesis.dv.model.SourceSchema;
 import io.syndesis.dv.model.ViewDefinition;
+import io.syndesis.dv.utils.KLog;
 
 @Component
 public class RepositoryManagerImpl implements RepositoryManager {
@@ -53,36 +54,38 @@ public class RepositoryManagerImpl implements RepositoryManager {
     @Autowired
     private ViewDefinitionRepository viewDefinitionRepository;
     @Autowired
+    private EditionRepository editionRepository;
+    @Autowired
     private PlatformTransactionManager platformTransactionManager;
 
     @Override
     public <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception {
         TransactionStatus transactionStatus = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
-        if (rollbackOnly) {
-            transactionStatus.setRollbackOnly();
+        if (transactionStatus.isNewTransaction()) {
+            if (rollbackOnly) {
+                transactionStatus.setRollbackOnly();
+            }
+        } else {
+            //there is a surrounding txn, so we can't set the rollback only flag
+            rollbackOnly = false;
         }
         String txnName = null;
         if (LOGGER.isDebugEnabled()) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             txnName = stackTraceElements[2].getMethodName();
+            LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", txnName, rollbackOnly ); //$NON-NLS-1$
         }
-        LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", txnName, rollbackOnly ); //$NON-NLS-1$
         try {
-            T result = callable.call();
-            if (!rollbackOnly) {
-                try {
-                    platformTransactionManager.commit(transactionStatus);
-                    LOGGER.debug( "commit: successfully committed '%s'", //$NON-NLS-1$
-                            txnName);
-                } catch (TransactionTimedOutException e) {
-                    throw new TimeoutException(e);
-                }
-                //any other exceptions can be unchecked
-            }
-            return result;
+            return callable.call();
         } finally {
-            if (!transactionStatus.isCompleted()) {
-                platformTransactionManager.rollback(transactionStatus);
+            try {
+                platformTransactionManager.commit(transactionStatus);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug( "transaction ended '%s'", //$NON-NLS-1$
+                            txnName);
+                }
+            } catch (TransactionTimedOutException e) {
+                throw new TimeoutException(e);
             }
         }
     }
@@ -210,5 +213,39 @@ public class RepositoryManagerImpl implements RepositoryManager {
 
     public void flush() {
         this.viewDefinitionRepository.flush();
+    }
+
+    @Override
+    public Edition createEdition(String virtualization) {
+        Edition edition = new Edition();
+        Long val = this.editionRepository.findMaxRevision(virtualization);
+        edition.setRevision(val == null?1:(val+1));
+        edition.setDataVirtualizationName(virtualization);
+        return this.editionRepository.save(edition);
+    }
+
+    @Override
+    public Edition findEdition(String virtualization, long revision) {
+        return this.editionRepository.findByDataVirtualizationNameAndRevision(virtualization, revision);
+    }
+
+    @Override
+    public List<Edition> findEditions(String virtualization) {
+        return this.editionRepository.findAllByDataVirtualizationName(virtualization);
+    }
+
+    @Override
+    public void saveEditionExport(Edition edition, byte[] byteArray) {
+        this.editionRepository.saveExport(edition.getId(), byteArray);
+    }
+
+    @Override
+    public byte[] findEditionExport(Edition edition) {
+        return this.editionRepository.findExport(edition.getId());
+    }
+
+    @Override
+    public Long deleteViewDefinitions(String virtualization) {
+        return this.viewDefinitionRepository.deleteByDataVirtualizationName(virtualization);
     }
 }

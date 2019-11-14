@@ -124,6 +124,7 @@ public class BuildStatus {
 
     private String openShiftName;
     private String dataVirtualizationName;
+    private Long deploymentVersion;
 
     public BuildStatus(String openShiftName) {
         this.openShiftName = openShiftName;
@@ -232,5 +233,13 @@ public class BuildStatus {
 
     public void setUsedBy(List<String> usedBy) {
         this.usedBy = usedBy;
+    }
+
+    public Long getDeploymentVersion() {
+        return this.deploymentVersion;
+    }
+
+    public void setDeploymentVersion(Long deploymentVersion) {
+        this.deploymentVersion = deploymentVersion;
     }
 }

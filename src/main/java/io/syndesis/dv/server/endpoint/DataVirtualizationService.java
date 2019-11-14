@@ -19,6 +19,8 @@ package io.syndesis.dv.server.endpoint;
 
 import static io.syndesis.dv.server.Messages.Error.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,12 +34,15 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,13 +55,16 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.core.util.Assertion;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.util.FullyQualifiedName;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
@@ -69,6 +77,7 @@ import io.syndesis.dv.StringConstants;
 import io.syndesis.dv.metadata.TeiidDataSource;
 import io.syndesis.dv.metadata.TeiidVdb;
 import io.syndesis.dv.model.DataVirtualization;
+import io.syndesis.dv.model.Edition;
 import io.syndesis.dv.model.SourceSchema;
 import io.syndesis.dv.model.ViewDefinition;
 import io.syndesis.dv.model.export.v1.DataVirtualizationV1Adapter;
@@ -148,6 +157,7 @@ public final class DataVirtualizationService extends DvService {
             entity.setPodNamespace(status.getNamespace());
             entity.setOdataHostName(getOdataHost(status));
             entity.setUsedBy(status.getUsedBy());
+            entity.setPublishedRevision(status.getDeploymentVersion());
         }
         entity.setEmpty(this.getWorkspaceManager().findViewDefinitionsNames(virtualization.getName()).isEmpty());
         return entity;
@@ -228,7 +238,7 @@ public final class DataVirtualizationService extends DvService {
             return repositoryManager.runInTransaction(false, () -> {
                 final DataVirtualization dv = getWorkspaceManager().createDataVirtualization(restName);
                 dv.setDescription(restDataVirtualization.getDescription());
-                return ResponseEntity.ok(restName + " Successfully created");
+                return ResponseEntity.ok(restName + " Successfully created"); //$NON-NLS-1$
             });
         } catch (DataIntegrityViolationException e) {
             throw error(HttpStatus.CONFLICT, Messages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
@@ -364,7 +374,7 @@ public final class DataVirtualizationService extends DvService {
                 result.addAttribute(vd.getName(), vd.getId());
             }
 
-            dataservice.setModifiedAt(null);
+            dataservice.touch();
 
             return result;
         });
@@ -454,40 +464,48 @@ public final class DataVirtualizationService extends DvService {
             required = true) final @PathVariable(VIRTUALIZATION) String virtualization)
             throws Exception {
 
-        DataVirtualizationV1Adapter result = repositoryManager.runInTransaction(true, () -> {
+        StreamingResponseBody result = repositoryManager.runInTransaction(true, () -> {
             DataVirtualization dv = getWorkspaceManager().findDataVirtualization(virtualization);
 
             if (dv == null) {
                 throw notFound(virtualization);
             }
 
-            DataVirtualizationV1Adapter adapter = new DataVirtualizationV1Adapter(dv);
+            return createExportStream(dv);
+        });
 
-            List<? extends ViewDefinition> views = getWorkspaceManager().findViewDefinitions(virtualization);
 
-            Map<String, SourceV1> sources = new LinkedHashMap<>();
+        MultiValueMap<String, String> headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=\""+virtualization+"-export.zip\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return new ResponseEntity<StreamingResponseBody>(result, headers, HttpStatus.OK);
+    }
 
-            for (ViewDefinition view : views) {
-                adapter.getViews().add(new ViewDefinitionV1Adapter(view));
-                for (String path : view.getSourcePaths()) {
-                    String connection = PathUtils.getOptions(path).get(0).getSecond();
-                    if (sources.containsKey(connection)) {
-                        continue;
-                    }
-                    TeiidDataSource tds = this.metadataService.findTeiidDatasource(connection);
-                    if (tds != null) {
-                        SourceV1 source = new SourceV1();
-                        source.setSourceId(tds.getSyndesisId());
-                        source.setName(tds.getName());
-                        sources.put(connection, source);
-                    }
+    private StreamingResponseBody createExportStream(DataVirtualization dv)
+            throws KException {
+        DataVirtualizationV1Adapter adapter = new DataVirtualizationV1Adapter(dv);
+
+        List<? extends ViewDefinition> views = getWorkspaceManager().findViewDefinitions(dv.getName());
+
+        Map<String, SourceV1> sources = new LinkedHashMap<>();
+
+        for (ViewDefinition view : views) {
+            adapter.getViews().add(new ViewDefinitionV1Adapter(view));
+            for (String path : view.getSourcePaths()) {
+                String connection = PathUtils.getOptions(path).get(0).getSecond();
+                if (sources.containsKey(connection)) {
+                    continue;
+                }
+                TeiidDataSource tds = this.metadataService.findTeiidDatasource(connection);
+                if (tds != null) {
+                    SourceV1 source = new SourceV1();
+                    source.setSourceId(tds.getSyndesisId());
+                    source.setName(tds.getName());
+                    sources.put(connection, source);
                 }
             }
+        }
 
-            adapter.setSources(new ArrayList<>(sources.values()));
-
-            return adapter;
-        });
+        adapter.setSources(new ArrayList<>(sources.values()));
 
         StreamingResponseBody stream = out -> {
             ZipOutputStream zos = new ZipOutputStream(out);
@@ -497,7 +515,7 @@ public final class DataVirtualizationService extends DvService {
             ObjectMapper mapper = new ObjectMapper(jsonFactory);
 
             zos.putNextEntry(new ZipEntry("dv.json")); //$NON-NLS-1$
-            mapper.writerWithDefaultPrettyPrinter().writeValue(zos, result);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(zos, adapter);
             zos.closeEntry();
 
             zos.putNextEntry(new ZipEntry("dv-info.json")); //$NON-NLS-1$
@@ -506,9 +524,8 @@ public final class DataVirtualizationService extends DvService {
 
             zos.close();
         };
-        MultiValueMap<String, String> headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\""+virtualization+"-export.zip\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        return new ResponseEntity<StreamingResponseBody>(stream, headers, HttpStatus.OK);
+
+        return stream;
     }
 
     /**
@@ -519,11 +536,17 @@ public final class DataVirtualizationService extends DvService {
      * @throws Exception
      */
     @PostMapping()
-    @ApiOperation(value = "Import a single data virtualization", response = String.class)
-    public ResponseEntity<StatusObject> importDataVirtualization(@ApiParam(value = "name of the virtualization")
+    @ApiOperation(value = "Import a single data virtualization", response = StatusObject.class)
+    public StatusObject importDataVirtualization(@ApiParam(value = "name of the virtualization")
             @RequestParam(name="virtualization", required=false) String virtualization,
             @RequestParam("file") MultipartFile file) throws Exception {
 
+        return importDataVirtualization(virtualization, file, true);
+    }
+
+    private StatusObject importDataVirtualization(String virtualization,
+            InputStreamSource file, boolean createVirtualization) throws IOException, JsonParseException,
+            JsonMappingException, Exception {
         final DataVirtualizationV1Adapter dv;
         try (InputStream is = file.getInputStream();) {
             ZipInputStream zis = new ZipInputStream(is);
@@ -557,19 +580,18 @@ public final class DataVirtualizationService extends DvService {
             entity.setDataVirtualizationName(virtualization);
         }
 
-        StatusObject kso = new StatusObject("import result"); //$NON-NLS-1$
-
         try {
-            repositoryManager.runInTransaction(false, () -> {
+            return repositoryManager.runInTransaction(false, () -> {
+                StatusObject status = new StatusObject("import result"); //$NON-NLS-1$
                 for (SourceV1 source : dv.getSources()) {
                     TeiidDataSource tds = metadataService.findTeiidDatasource(source.getName());
                     if (tds == null) {
                         //nothing with this name, check by id
                         SourceSchema schema = getWorkspaceManager().findSchemaBySourceId(source.getSourceId());
                         if (schema != null) {
-                            kso.addAttribute(source.getName(), "a syndesis connection exists with the given id, but does not match the name"); //$NON-NLS-1$
+                            status.addAttribute(source.getName(), "a syndesis connection exists with the given id, but does not match the name"); //$NON-NLS-1$
                         } else {
-                            kso.addAttribute(source.getName(), "no syndesis connection can be found"); //$NON-NLS-1$
+                            status.addAttribute(source.getName(), "no syndesis connection can be found"); //$NON-NLS-1$
                         }
                     } else {
                         if (tds.getSyndesisId().equals(source.getSourceId())) {
@@ -577,23 +599,32 @@ public final class DataVirtualizationService extends DvService {
                             //however it seems like syndesis connection ids are simply sequential,
                             //so they may not be consistent across environments
                         } else {
-                            kso.addAttribute(source.getName(), "a syndesis connection with the same name exists, but the ids do not match"); //$NON-NLS-1$
+                            status.addAttribute(source.getName(), "a syndesis connection with the same name exists, but the ids do not match"); //$NON-NLS-1$
                         }
                     }
                 }
-                createDataVirtualization(new RestDataVirtualization(toImport));
+                if (createVirtualization) {
+                    createDataVirtualization(new RestDataVirtualization(toImport));
+                } else {
+                    //revert
+                    repositoryManager.deleteViewDefinitions(dv.getName());
+                    DataVirtualization existing = repositoryManager.findDataVirtualization(dv.getName());
+                    if (existing == null) {
+                        throw notFound(dv.getName());
+                    }
+                    existing.setDescription(dv.getDescription());
+                    existing.setModified(false);
+                }
 
                 for (ViewDefinitionV1Adapter adapter : dv.getViews()) {
                     ViewDefinition vd = adapter.getEntity();
                     utilService.upsertViewEditorState(vd);
                 }
-                return null;
+                return status;
             });
         } catch (DataIntegrityViolationException e) {
             throw error(HttpStatus.CONFLICT, Messages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
         }
-
-        return new ResponseEntity<StatusObject>(kso, HttpStatus.OK);
     }
 
     /**
@@ -721,7 +752,10 @@ public final class DataVirtualizationService extends DvService {
             throw forbidden(Messages.Error.VDB_NAME_NOT_PROVIDED);
         }
 
-        return repositoryManager.runInTransaction(true, ()-> {
+        PublishConfiguration config = new PublishConfiguration();
+
+        StatusObject status = new StatusObject();
+        repositoryManager.runInTransaction(false, ()-> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
             if (dataservice == null) {
                 throw notFound(payload.getName());
@@ -732,8 +766,6 @@ public final class DataVirtualizationService extends DvService {
             if (vdb == null || !vdb.hasLoaded()) {
                 throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
             }
-
-            StatusObject status = new StatusObject();
 
             List<String> errors = vdb.getValidityErrors();
             if (!errors.isEmpty()) {
@@ -758,24 +790,137 @@ public final class DataVirtualizationService extends DvService {
             //use the preview vdb to build the needed metadata
             VDBMetaData theVdb = new ServiceVdbGenerator(metadataService).createServiceVdb(dataservice.getName(), vdb, editorStates);
 
+            //create a new published edition with the saved workspace state
+            Edition edition = repositoryManager.createEdition(dataservice.getName());
+
+            StreamingResponseBody stream = createExportStream(dataservice);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            stream.writeTo(baos);
+            repositoryManager.saveEditionExport(edition, baos.toByteArray());
+
+            dataservice.setModified(false); //once we've published, we're not modified
+
             // the properties in this class can be exposed for user input
-            PublishConfiguration config = new PublishConfiguration();
             config.setVDB(theVdb);
             config.setOAuthCredentials(creds);
             config.setEnableOData(payload.getEnableOdata());
             config.setContainerDiskSize(payload.getDiskSize());
             config.setContainerMemorySize(payload.getMemory());
             config.setCpuUnits(payload.getCpuUnits());
+            status.addAttribute(REVISION, String.valueOf(edition.getRevision()));
+            config.setPublishedRevision(edition.getRevision());
+            //
+            // Return the status from this request. Otherwise, monitor using #getVirtualizations()
+            //
+            return status;
+        });
+
+        if (config.getVDB() != null) {
+            //outside of the txn call to the openshift client
             BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
 
             status.addAttribute("OpenShift Name", buildStatus.getOpenShiftName()); //$NON-NLS-1$
             status.addAttribute("Build Status", buildStatus.getStatus().name()); //$NON-NLS-1$
             status.addAttribute("Build Status Message", buildStatus.getStatusMessage()); //$NON-NLS-1$
+        }
 
-            //
-            // Return the status from this request. Otherwise, monitor using #getVirtualizations()
-            //
-            return status;
+        return status;
+    }
+
+    /**
+     * Get the editions from the repository
+     * @return a JSON document representing all the editions
+     * @throws Exception
+     */
+    @GetMapping(value = V1Constants.PUBLISH + FS
+            + VIRTUALIZATION_PLACEHOLDER, produces = {
+                    MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Return the collection of editions", response = Edition.class, responseContainer = "List")
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public List<Edition> getEditions(
+            @ApiParam(value = "Name of the virtualization", required = true) final @PathVariable(VIRTUALIZATION) String virtualization)
+            throws Exception {
+        return repositoryManager.runInTransaction(false, () -> {
+            return repositoryManager
+                    .findEditions(virtualization);
+        });
+    }
+
+    /**
+     * Get a single edition
+     * @param virtualization
+     * @param revision
+     * @return
+     * @throws Exception
+     *
+     * TODO: there's not yet more detail here than what is in the list
+     */
+    @GetMapping(value = V1Constants.PUBLISH + FS + VIRTUALIZATION_PLACEHOLDER
+            + FS + REVISION_PLACEHOLDER, produces = {
+                    MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Return an edition", response = Edition.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public Edition getEdition(
+            @ApiParam(value = "Name of the virtualization", required = true) final @PathVariable(VIRTUALIZATION) String virtualization,
+            @ApiParam(value = "Revision number", required = true) final @PathVariable(REVISION) long revision)
+            throws Exception {
+        return repositoryManager.runInTransaction(false, () -> {
+            Edition e = repositoryManager.findEdition(virtualization, revision);
+
+            if (e == null) {
+                throw notFound(virtualization + " " + revision); //$NON-NLS-1$
+            }
+
+            return e;
+        });
+    }
+/*
+    @PostMapping(value = V1Constants.PUBLISH + FS + VIRTUALIZATION_PLACEHOLDER
+            + FS + REVISION_PLACEHOLDER + FS + START, produces = {
+                    MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Start an edition", response = StatusObject.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public StatusObject startEdition(
+            @ApiParam(value = "Name of the virtualization to be deleted", required = true) final @PathVariable(VIRTUALIZATION) String virtualization,
+            @ApiParam(value = "Revision number", required = true) final @PathVariable(REVISION) long revision)
+            throws Exception {
+        return repositoryManager.runInTransaction(true, () -> {
+            Edition e = repositoryManager.findEdition(virtualization, revision);
+
+            if (e == null) {
+                throw notFound(virtualization + " " + revision); //$NON-NLS-1$
+            }
+
+            return e;
+        });
+    }
+*/
+
+    @PostMapping(value = V1Constants.PUBLISH + FS + VIRTUALIZATION_PLACEHOLDER
+            + FS + REVISION_PLACEHOLDER + FS + REVERT, produces = {
+                    MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Revert to an edition", response = StatusObject.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public StatusObject revertToEdition(
+            @ApiParam(value = "Name of the virtualization to be deleted", required = true) final @PathVariable(VIRTUALIZATION) String virtualization,
+            @ApiParam(value = "Revision number", required = true) final @PathVariable(REVISION) long revision)
+            throws Exception {
+        return repositoryManager.runInTransaction(false, () -> {
+            Edition e = repositoryManager.findEdition(virtualization, revision);
+
+            if (e == null) {
+                throw notFound(virtualization + " " + revision); //$NON-NLS-1$
+            }
+
+            byte[] bytes = repositoryManager.findEditionExport(e);
+
+            Assertion.isNotNull(bytes);
+
+            return importDataVirtualization(virtualization, new ByteArrayResource(bytes), false);
         });
     }
 
