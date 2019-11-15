@@ -164,9 +164,17 @@ public interface V1Constants extends StringConstants {
 
     String VIRTUALIZATION = "virtualization"; //$NON-NLS-1$
 
+    String REVISION = "revision"; //$NON-NLS-1$
+
     /**
      * Placeholder added to an URI to allow a specific virtualization name
      */
     String VIRTUALIZATION_PLACEHOLDER = "{" + VIRTUALIZATION + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+
+    String REVISION_PLACEHOLDER = "{" + REVISION + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+
+    String START = "start"; //$NON-NLS-1$
+
+    String REVERT = "revert"; //$NON-NLS-1$
 
 }

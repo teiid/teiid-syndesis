@@ -23,15 +23,13 @@ import java.net.URLDecoder;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import io.syndesis.dv.model.DataVirtualization;
 import io.syndesis.dv.rest.JsonMarshaller;
-import io.syndesis.dv.server.endpoint.RestDataVirtualization;
-
-import org.mockito.Mockito;
 
 @SuppressWarnings( { "javadoc", "nls" } )
-public final class DataserviceSerializerTest {
+public final class DataVirtualizationSerializerTest {
 
     protected static final String DATASERVICE_NAME = "dataservice1";
 
@@ -41,23 +39,24 @@ public final class DataserviceSerializerTest {
             "  \"name\" : \"dataservice1\",\n" +
             "  \"description\" : \"my description\",\n" +
             "  \"publishedState\" : \"NOTFOUND\",\n" +
-            "  \"empty\" : true\n" +
+            "  \"empty\" : true,\n" +
+            "  \"modified\" : false\n" +
             "}";
 
-    private RestDataVirtualization dataservice;
+    private RestDataVirtualization dataVirtualization;
 
     @Before
     public void init() throws Exception {
         DataVirtualization theService = Mockito.mock(DataVirtualization.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        this.dataservice = new RestDataVirtualization(theService);
-        this.dataservice.setDescription(DESCRIPTION);
+        this.dataVirtualization = new RestDataVirtualization(theService);
+        this.dataVirtualization.setDescription(DESCRIPTION);
     }
 
     @Test
     public void shouldExportJson() throws Exception {
-        String json = JsonMarshaller.marshall( this.dataservice );
+        String json = JsonMarshaller.marshall( this.dataVirtualization );
         json = URLDecoder.decode(json, "UTF-8");
         assertEquals(JSON, json);
     }

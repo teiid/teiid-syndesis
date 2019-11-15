@@ -637,7 +637,7 @@ public class MetadataService extends DvService implements ServiceVdbGenerator.Sc
         mmd.setModelType(Type.PHYSICAL);
 
         for (Map.Entry<String,String> entry : teiidSource.getImportProperties().entrySet()) {
-            mmd.addProperty(entry.getKey(), entry.getValue());  //$NON-NLS-1$
+            mmd.addProperty(entry.getKey(), entry.getValue());
         }
 
         if (schema != null) {

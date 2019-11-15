@@ -18,8 +18,7 @@
 package io.syndesis.dv.server.endpoint;
 
 import java.util.List;
-
-import io.syndesis.dv.openshift.BuildStatus;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -27,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.syndesis.dv.KException;
 import io.syndesis.dv.model.DataVirtualization;
+import io.syndesis.dv.openshift.BuildStatus;
 
 /**
  * A Dataservice.
@@ -39,13 +39,14 @@ public final class RestDataVirtualization {
     private String name;
     private String description;
     private String serviceViewModel;
-    private String serviceVdbName;
     private String publishedState;
     private String podNamespace;
     private String publishPodName;
     private String odataHostName;
     private boolean empty = true;
     private List<String> usedBy;
+    private Long publishedRevision;
+    private boolean modified;
 
     /**
      * Constructor for use when deserializing
@@ -68,6 +69,8 @@ public final class RestDataVirtualization {
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
+
+        setModified(dataService.isModified());
     }
 
     /**
@@ -172,18 +175,7 @@ public final class RestDataVirtualization {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((odataHostName == null) ? 0 : odataHostName.hashCode());
-        result = prime * result + ((podNamespace == null) ? 0 : podNamespace.hashCode());
-        result = prime * result + ((publishPodName == null) ? 0 : publishPodName.hashCode());
-        result = prime * result + ((publishedState == null) ? 0 : publishedState.hashCode());
-        result = prime * result + ((serviceVdbName == null) ? 0 : serviceVdbName.hashCode());
-        result = prime * result + ((serviceViewModel == null) ? 0 : serviceViewModel.hashCode());
-        return result;
+        return Objects.hash(id, name);
     }
 
     @Override
@@ -195,52 +187,8 @@ public final class RestDataVirtualization {
         if (getClass() != obj.getClass())
             return false;
         RestDataVirtualization other = (RestDataVirtualization) obj;
-        if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (odataHostName == null) {
-            if (other.odataHostName != null)
-                return false;
-        } else if (!odataHostName.equals(other.odataHostName))
-            return false;
-        if (podNamespace == null) {
-            if (other.podNamespace != null)
-                return false;
-        } else if (!podNamespace.equals(other.podNamespace))
-            return false;
-        if (publishPodName == null) {
-            if (other.publishPodName != null)
-                return false;
-        } else if (!publishPodName.equals(other.publishPodName))
-            return false;
-        if (publishedState == null) {
-            if (other.publishedState != null)
-                return false;
-        } else if (!publishedState.equals(other.publishedState))
-            return false;
-        if (serviceVdbName == null) {
-            if (other.serviceVdbName != null)
-                return false;
-        } else if (!serviceVdbName.equals(other.serviceVdbName))
-            return false;
-        if (serviceViewModel == null) {
-            if (other.serviceViewModel != null)
-                return false;
-        } else if (!serviceViewModel.equals(other.serviceViewModel))
-            return false;
-        return true;
+        return Objects.equals(id, other.id) &&
+                Objects.equals(name, other.name);
     }
 
     public void setEmpty(boolean empty) {
@@ -261,5 +209,21 @@ public final class RestDataVirtualization {
 
     public void setUsedBy(List<String> usedBy) {
         this.usedBy = usedBy;
+    }
+
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
+    public Long getPublishedRevision() {
+        return publishedRevision;
+    }
+
+    public void setPublishedRevision(Long publishedRevision) {
+        this.publishedRevision = publishedRevision;
     }
 }

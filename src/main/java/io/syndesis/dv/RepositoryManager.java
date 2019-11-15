@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import io.syndesis.dv.model.DataVirtualization;
+import io.syndesis.dv.model.Edition;
 import io.syndesis.dv.model.SourceSchema;
 import io.syndesis.dv.model.ViewDefinition;
 
@@ -96,4 +97,21 @@ public interface RepositoryManager {
             Iterable<ViewDefinition> entities);
 
     boolean isNameInUse(String name);
+
+    Long deleteViewDefinitions(String virtualization);
+
+    /**
+     * Create a new published edition, with an automatically assigned revision number
+     * @param virtualization
+     * @return
+     */
+    Edition createEdition(String virtualization);
+
+    List<Edition> findEditions(String virtualization);
+
+    Edition findEdition(String virtualization, long revision);
+
+    void saveEditionExport(Edition edition, byte[] byteArray);
+
+    byte[] findEditionExport(Edition edition);
 }

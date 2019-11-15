@@ -21,23 +21,29 @@ package io.syndesis.dv.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import io.syndesis.dv.model.ViewDefinition;
+import io.syndesis.dv.model.Edition;
 
 @Repository
-public interface ViewDefinitionRepository extends JpaRepository<ViewDefinition, String> {
+public interface EditionRepository extends JpaRepository<Edition, String> {
 
-    @Query("from ViewDefinition vd where vd.dataVirtualizationName = :dvName and vd.upperName = UPPER(:viewDefinitionName)")
-    public ViewDefinition findByNameIgnoreCase(@Param("dvName") String dvName, @Param("viewDefinitionName") String viewDefinitionName);
+    @Query(value = "SELECT max(revision) FROM edition where dv_name = :name", nativeQuery = true)
+    Long findMaxRevision(@Param("name") String name);
 
-    public List<ViewDefinition> findAllByDataVirtualizationName(String dvName);
+    Edition findByDataVirtualizationNameAndRevision(String virtualization,
+            long revision);
 
-    @Query(value = "SELECT name FROM view_definition WHERE dv_name = ?1", nativeQuery = true)
-    public List<String> findAllNamesByDataVirtualizationName(String dvName);
+    List<Edition> findAllByDataVirtualizationName(String virtualization);
 
-    public Long deleteByDataVirtualizationName(String virtualization);
+    @Modifying
+    @Query(value = "update edition set dv_export = :byteArray where id = :id", nativeQuery = true)
+    void saveExport(@Param("id") String id, @Param("byteArray") byte[] byteArray);
+
+    @Query(value = "select dv_export from edition where id = :id", nativeQuery = true)
+    byte[] findExport(@Param("id") String id);
 
 }

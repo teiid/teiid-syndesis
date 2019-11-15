@@ -44,6 +44,7 @@ public class PublishConfiguration implements StringConstants {
 
     // cpu units
     private int cpuUnits = 500; // 100m is 0.1 of CPU, at 500m we have 1/2 CPU as default
+    private long publishedRevision;
 
     public String getBuildImageStream() {
         String stream = System.getenv("BUILD_IMAGE_STREAM");
@@ -170,4 +171,14 @@ public class PublishConfiguration implements StringConstants {
         }
         return this.vdb.getName();
     }
+
+    public long getPublishedRevision() {
+        return publishedRevision;
+    }
+
+    public void setPublishedRevision(long publishedRevision) {
+        this.publishedRevision = publishedRevision;
+    }
+
 }
+

@@ -21,12 +21,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import io.syndesis.dv.model.DataVirtualization;
 import io.syndesis.dv.openshift.BuildStatus;
-import io.syndesis.dv.server.endpoint.RestDataVirtualization;
-
-import org.mockito.Mockito;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class RestDataserviceTest {

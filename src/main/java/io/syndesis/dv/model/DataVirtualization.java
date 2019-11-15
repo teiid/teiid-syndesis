@@ -39,6 +39,7 @@ public class DataVirtualization extends BaseDataVirtualization {
     }
 
     private String description;
+    private boolean modified = true;
 
     protected DataVirtualization() {
     }
@@ -53,6 +54,23 @@ public class DataVirtualization extends BaseDataVirtualization {
 
     public void setDescription(String description) {
         this.description = description;
+        setModified(true);
+    }
+
+    /**
+     * increment version and update modification timestamp
+     */
+    public void touch() {
+        setModifiedAt(null);
+        modified = true;
+    }
+
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 
 }
