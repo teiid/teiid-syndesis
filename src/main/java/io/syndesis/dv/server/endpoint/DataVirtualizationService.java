@@ -19,6 +19,7 @@ package io.syndesis.dv.server.endpoint;
 
 import static io.syndesis.dv.server.Messages.Error.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,8 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -55,6 +58,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.core.util.Assertion;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
@@ -104,6 +108,10 @@ import io.syndesis.dv.utils.StringUtils;
         + StringConstants.FS + V1Constants.VIRTUALIZATIONS_SEGMENT)
 @Api(tags = { V1Constants.VIRTUALIZATIONS_SEGMENT })
 public final class DataVirtualizationService extends DvService {
+
+    private static final String DV_JSON = "dv.json"; //$NON-NLS-1$
+
+    private static final String DV_VDB_XML = "dv-vdb.xml"; //$NON-NLS-1$
 
     /**
      * To be a valid schema name we don't allow .
@@ -471,7 +479,7 @@ public final class DataVirtualizationService extends DvService {
                 throw notFound(virtualization);
             }
 
-            return createExportStream(dv);
+            return createExportStream(dv, null);
         });
 
 
@@ -480,7 +488,14 @@ public final class DataVirtualizationService extends DvService {
         return new ResponseEntity<StreamingResponseBody>(result, headers, HttpStatus.OK);
     }
 
-    private StreamingResponseBody createExportStream(DataVirtualization dv)
+    /**
+     * Create an export of the current workspace.  Optionally including the full vdb.
+     * @param dv
+     * @param theVdb
+     * @return
+     * @throws KException
+     */
+    private StreamingResponseBody createExportStream(DataVirtualization dv, VDBMetaData theVdb)
             throws KException {
         DataVirtualizationV1Adapter adapter = new DataVirtualizationV1Adapter(dv);
 
@@ -514,13 +529,24 @@ public final class DataVirtualizationService extends DvService {
             jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
             ObjectMapper mapper = new ObjectMapper(jsonFactory);
 
-            zos.putNextEntry(new ZipEntry("dv.json")); //$NON-NLS-1$
+            zos.putNextEntry(new ZipEntry(DV_JSON));
             mapper.writerWithDefaultPrettyPrinter().writeValue(zos, adapter);
             zos.closeEntry();
 
             zos.putNextEntry(new ZipEntry("dv-info.json")); //$NON-NLS-1$
             zos.write("{\"version\":1}".getBytes("UTF-8")); //$NON-NLS-1$ //$NON-NLS-2$
             zos.closeEntry();
+
+            if (theVdb != null) {
+                zos.putNextEntry(new ZipEntry(DV_VDB_XML));
+                try {
+                    VDBMetadataParser.marshell(theVdb, zos);
+                } catch (XMLStreamException e) {
+                    throw new IOException(e);
+                }
+                //the marshal closes automatically
+                //zos.closeEntry();
+            }
 
             zos.close();
         };
@@ -552,7 +578,7 @@ public final class DataVirtualizationService extends DvService {
             ZipInputStream zis = new ZipInputStream(is);
 
             ZipEntry ze = zis.getNextEntry();
-            while (ze != null && !ze.getName().equals("dv.json")) { //$NON-NLS-1$
+            while (ze != null && !ze.getName().equals(DV_JSON)) {
                 ze = zis.getNextEntry();
             }
             if (ze == null) {
@@ -775,8 +801,6 @@ public final class DataVirtualizationService extends DvService {
 
             status.addAttribute("Publishing", "Operation initiated");  //$NON-NLS-1$//$NON-NLS-2$
 
-            final OAuthCredentials creds = getAuthenticationToken();
-
             List<? extends ViewDefinition> editorStates = getWorkspaceManager().findViewDefinitions(dataservice.getName());
 
             //check for unparsable - alternatively we could put this on the preview vdb
@@ -793,22 +817,16 @@ public final class DataVirtualizationService extends DvService {
             //create a new published edition with the saved workspace state
             Edition edition = repositoryManager.createEdition(dataservice.getName());
 
-            StreamingResponseBody stream = createExportStream(dataservice);
+            StreamingResponseBody stream = createExportStream(dataservice, theVdb);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             stream.writeTo(baos);
             repositoryManager.saveEditionExport(edition, baos.toByteArray());
 
             dataservice.setModified(false); //once we've published, we're not modified
 
-            // the properties in this class can be exposed for user input
-            config.setVDB(theVdb);
-            config.setOAuthCredentials(creds);
-            config.setEnableOData(payload.getEnableOdata());
-            config.setContainerDiskSize(payload.getDiskSize());
-            config.setContainerMemorySize(payload.getMemory());
-            config.setCpuUnits(payload.getCpuUnits());
+            updatePublishConfiguration(payload, config, theVdb, edition);
+
             status.addAttribute(REVISION, String.valueOf(edition.getRevision()));
-            config.setPublishedRevision(edition.getRevision());
             //
             // Return the status from this request. Otherwise, monitor using #getVirtualizations()
             //
@@ -817,14 +835,32 @@ public final class DataVirtualizationService extends DvService {
 
         if (config.getVDB() != null) {
             //outside of the txn call to the openshift client
-            BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
-
-            status.addAttribute("OpenShift Name", buildStatus.getOpenShiftName()); //$NON-NLS-1$
-            status.addAttribute("Build Status", buildStatus.getStatus().name()); //$NON-NLS-1$
-            status.addAttribute("Build Status Message", buildStatus.getStatusMessage()); //$NON-NLS-1$
+            submitPublish(config, status);
         }
 
         return status;
+    }
+
+    private void submitPublish(PublishConfiguration config, StatusObject status)
+            throws KException {
+        BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
+
+        status.addAttribute("OpenShift Name", buildStatus.getOpenShiftName()); //$NON-NLS-1$
+        status.addAttribute("Build Status", buildStatus.getStatus().name()); //$NON-NLS-1$
+        status.addAttribute("Build Status Message", buildStatus.getStatusMessage()); //$NON-NLS-1$
+    }
+
+    private void updatePublishConfiguration(final PublishRequestPayload payload,
+            PublishConfiguration config, VDBMetaData theVdb, Edition edition) {
+        final OAuthCredentials creds = getAuthenticationToken();
+        // the properties in this class can be exposed for user input
+        config.setVDB(theVdb);
+        config.setOAuthCredentials(creds);
+        config.setEnableOData(payload.getEnableOdata());
+        config.setContainerDiskSize(payload.getDiskSize());
+        config.setContainerMemorySize(payload.getMemory());
+        config.setCpuUnits(payload.getCpuUnits());
+        config.setPublishedRevision(edition.getRevision());
     }
 
     /**
@@ -876,7 +912,14 @@ public final class DataVirtualizationService extends DvService {
             return e;
         });
     }
-/*
+
+    /**
+     * Start (re-publish) the given revision
+     * @param virtualization
+     * @param revision
+     * @return
+     * @throws Exception
+     */
     @PostMapping(value = V1Constants.PUBLISH + FS + VIRTUALIZATION_PLACEHOLDER
             + FS + REVISION_PLACEHOLDER + FS + START, produces = {
                     MediaType.APPLICATION_JSON_VALUE })
@@ -887,17 +930,37 @@ public final class DataVirtualizationService extends DvService {
             @ApiParam(value = "Name of the virtualization to be deleted", required = true) final @PathVariable(VIRTUALIZATION) String virtualization,
             @ApiParam(value = "Revision number", required = true) final @PathVariable(REVISION) long revision)
             throws Exception {
-        return repositoryManager.runInTransaction(true, () -> {
+         PublishConfiguration publishConfig = repositoryManager.runInTransaction(true, () -> {
             Edition e = repositoryManager.findEdition(virtualization, revision);
 
             if (e == null) {
                 throw notFound(virtualization + " " + revision); //$NON-NLS-1$
             }
 
-            return e;
+            byte[] bytes = repositoryManager.findEditionExport(e);
+            Assertion.isNotNull(bytes);
+
+            ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes));
+
+            ZipEntry ze = zis.getNextEntry();
+            while (ze != null && !ze.getName().equals(DV_VDB_XML)) {
+                ze = zis.getNextEntry();
+            }
+            Assertion.isNotNull(ze);
+
+            VDBMetaData theVdb = VDBMetadataParser.unmarshell(zis);
+
+            PublishRequestPayload payload = new PublishRequestPayload();
+            PublishConfiguration config = new PublishConfiguration();
+            payload.setName(virtualization);
+
+            updatePublishConfiguration(payload, config, theVdb, e);
+            return config;
         });
+        StatusObject status = new StatusObject();
+        submitPublish(publishConfig, status);
+        return status;
     }
-*/
 
     @PostMapping(value = V1Constants.PUBLISH + FS + VIRTUALIZATION_PLACEHOLDER
             + FS + REVISION_PLACEHOLDER + FS + REVERT, produces = {
@@ -917,7 +980,6 @@ public final class DataVirtualizationService extends DvService {
             }
 
             byte[] bytes = repositoryManager.findEditionExport(e);
-
             Assertion.isNotNull(bytes);
 
             return importDataVirtualization(virtualization, new ByteArrayResource(bytes), false);

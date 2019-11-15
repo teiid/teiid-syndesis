@@ -177,5 +177,11 @@ public class IntegrationTestPublish {
                 ViewDefinition.class, id);
         assertEquals(HttpStatus.OK, view.getStatusCode());
         assertEquals("create view myview as select 1 as col", view.getBody().getDdl());
+
+        //start 1
+        statusResponse = restTemplate.exchange(
+                "/v1/virtualizations/publish/{name}/{edition}/start", HttpMethod.POST,
+                null, StatusObject.class, dvName, 1);
+        assertEquals(HttpStatus.OK, statusResponse.getStatusCode());
     }
 }
