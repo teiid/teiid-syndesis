@@ -1,13 +1,11 @@
 /*
- * Copyright Red Hat, Inc. and/or its affiliates
- * and other contributors as indicated by the @author tags and
- * the COPYRIGHT.txt file distributed with this work.
+ * Copyright (C) 2013 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,14 +31,6 @@ import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Before;
 import org.junit.Test;
-import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
-import io.syndesis.dv.datasources.MySQLDefinition;
-import io.syndesis.dv.datasources.PostgreSQLDefinition;
-import io.syndesis.dv.metadata.MetadataInstance;
-import io.syndesis.dv.server.AuthHandlingFilter;
-import io.syndesis.dv.server.DvConfigurationProperties;
-import io.syndesis.dv.server.AuthHandlingFilter.OAuthCredentials;
-
 import org.mockito.Mockito;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -49,18 +39,25 @@ import org.teiid.core.util.ObjectConverterUtil;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.syndesis.dv.KException;
+import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
+import io.syndesis.dv.datasources.MySQLDefinition;
+import io.syndesis.dv.datasources.PostgreSQLDefinition;
+import io.syndesis.dv.metadata.MetadataInstance;
+import io.syndesis.dv.server.AuthHandlingFilter;
+import io.syndesis.dv.server.AuthHandlingFilter.OAuthCredentials;
+import io.syndesis.dv.server.DvConfigurationProperties;
 
 public class TestVDBPublisher {
 
     private VDBMetaData vdb;
 
     @Before
-    public void setup() throws KException, Exception {
+    public void setup() throws Exception {
         final InputStream vdbStream = getClass().getClassLoader().getResourceAsStream("myservice-vdb.xml");
         this.vdb = VDBMetadataParser.unmarshell(vdbStream);
     }
 
-    private TeiidOpenShiftClient testDataSetup() throws KException {
+    private TeiidOpenShiftClient testDataSetup() {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
         MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
 
