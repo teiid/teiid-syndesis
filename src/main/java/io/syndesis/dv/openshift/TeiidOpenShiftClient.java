@@ -744,6 +744,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             .withNewMetadata().withName(getBuildConfigName(openShiftName))
                 .addToLabels("application", openShiftName)
                 .addToLabels(MANAGED_BY, SYSDESIS)
+                .addToLabels(DEPLOYMENT_VERSION_LABEL, String.valueOf(pc.getPublishedRevision()))
                 .endMetadata()
             .withNewSpec()
                 .withRunPolicy("SerialLatestOnly")
