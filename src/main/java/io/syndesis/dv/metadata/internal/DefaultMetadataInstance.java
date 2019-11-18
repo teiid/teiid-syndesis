@@ -34,15 +34,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
-import io.syndesis.dv.datasources.ExternalSource;
-import io.syndesis.dv.metadata.MetadataInstance;
-import io.syndesis.dv.metadata.TeiidDataSource;
-import io.syndesis.dv.metadata.TeiidVdb;
-import io.syndesis.dv.metadata.query.QSColumn;
-import io.syndesis.dv.metadata.query.QSResult;
-import io.syndesis.dv.metadata.query.QSRow;
-import io.syndesis.dv.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -78,6 +69,7 @@ import org.teiid.query.function.GeometryUtils;
 import org.teiid.query.metadata.BasicQueryMetadataWrapper;
 import org.teiid.query.metadata.CompositeMetadataStore;
 import org.teiid.query.metadata.MetadataValidator;
+import org.teiid.query.metadata.QueryMetadataInterface;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.parser.QueryParser;
@@ -90,6 +82,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 
 import io.syndesis.dv.KException;
+import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
+import io.syndesis.dv.datasources.ExternalSource;
+import io.syndesis.dv.metadata.MetadataInstance;
+import io.syndesis.dv.metadata.TeiidDataSource;
+import io.syndesis.dv.metadata.TeiidVdb;
+import io.syndesis.dv.metadata.query.QSColumn;
+import io.syndesis.dv.metadata.query.QSResult;
+import io.syndesis.dv.metadata.query.QSRow;
+import io.syndesis.dv.utils.KLog;
 
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
@@ -543,6 +544,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
                     } catch (QueryMetadataException e) {
                         return compositeMetadataStore.findGroup(groupName);
                     }
+                }
+
+                @Override
+                public QueryMetadataInterface getDesignTimeMetadata() {
+                    return this; //this is the design time, so that sources remain hidden
                 }
             };
 

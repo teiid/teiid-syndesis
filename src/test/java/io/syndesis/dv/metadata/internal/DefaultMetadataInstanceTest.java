@@ -23,13 +23,13 @@ import java.io.ByteArrayInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import io.syndesis.dv.metadata.MetadataInstance.ValidationResult;
-import io.syndesis.dv.metadata.TeiidVdb;
-import io.syndesis.dv.metadata.internal.DefaultMetadataInstance.TeiidVdbImpl;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 import io.syndesis.dv.KException;
+import io.syndesis.dv.metadata.MetadataInstance.ValidationResult;
+import io.syndesis.dv.metadata.TeiidVdb;
+import io.syndesis.dv.metadata.internal.DefaultMetadataInstance.TeiidVdbImpl;
 
 @SuppressWarnings("nls")
 public class DefaultMetadataInstanceTest {
@@ -67,6 +67,26 @@ public class DefaultMetadataInstanceTest {
     public void shouldValidate() throws Exception {
         String vdb = "<vdb name=\"myservice\" version=\"1\">\n" +
                 "    <model visible=\"true\" name=\"accounts\" type=\"VIRTUAL\">\n" +
+                "      <metadata type=\"DDL\">create view tbl (col) as select 1;</metadata>" +
+                "    </model>    \n" +
+                "</vdb>";
+
+        metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
+
+        ValidationResult report = metadataInstance.getVdb("myservice").validate("create view v as select * from tbl");
+        assertFalse(report.getReport().toString(), report.getReport().hasItems());
+
+        report = metadataInstance.getVdb("myservice").validate("create view v as select * from tbl1");
+        assertTrue(report.toString(), report.getReport().hasItems());
+    }
+
+    @Test
+    public void shouldValidateWithHidden() throws Exception {
+        String vdb = "<vdb name=\"myservice\" version=\"1\">\n" +
+                "    <model visible=\"true\" name=\"accounts\" type=\"VIRTUAL\">\n" +
+                "      <metadata type=\"DDL\">create view tbl (col) as select 1;</metadata>" +
+                "    </model>    \n" +
+                "    <model visible=\"false\" name=\"accounts-source\" type=\"VIRTUAL\">\n" +
                 "      <metadata type=\"DDL\">create view tbl (col) as select 1;</metadata>" +
                 "    </model>    \n" +
                 "</vdb>";
