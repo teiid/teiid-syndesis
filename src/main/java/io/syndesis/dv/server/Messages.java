@@ -1,4 +1,4 @@
-/*************************************************************************************
+/*
  * Copyright (C) 2013 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +17,6 @@ package io.syndesis.dv.server;
 
 import static io.syndesis.dv.StringConstants.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
@@ -546,60 +543,12 @@ public final class Messages {
          * VDB name not provided
          */
         VDB_NAME_NOT_PROVIDED;
-
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see java.lang.Enum#toString()
-         */
-        @Override
-        public String toString() {
-            return getEnumName( this ) + DOT + name();
-        }
-
     }
 
     private static final String BUNDLE_NAME = Messages.class.getPackage().getName() + DOT
                                               + Messages.class.getSimpleName().toLowerCase();
 
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle( BUNDLE_NAME );
-
-    private static String getEnumName( final Enum< ? > enumValue ) {
-        final String className = enumValue.getClass().getName();
-        final String[] components = className.split( "\\$" ); //$NON-NLS-1$
-        return components[ components.length - 1 ];
-    }
-
-    private static String getString( final Enum< ? > key ) {
-        try {
-            return RESOURCE_BUNDLE.getString( key.toString() );
-        } catch ( final Exception e ) {
-            String msg;
-
-            if ( e instanceof NullPointerException ) {
-                msg = "<No message key>"; //$NON-NLS-1$
-            } else if ( e instanceof MissingResourceException ) {
-                msg = OPEN_ANGLE_BRACKET + "Missing message for key \"" + key + "\" in: " + BUNDLE_NAME + CLOSE_ANGLE_BRACKET; //$NON-NLS-1$ //$NON-NLS-2$
-            } else {
-                msg = e.getLocalizedMessage();
-            }
-
-            return msg;
-        }
-    }
-
-    private static void expandParameters(Object parameter, List<Object> paramList) {
-        if (parameter instanceof Object[]) {
-            Object[] parameters = (Object[]) parameter;
-            for (Object param : parameters) {
-                expandParameters(param, paramList);
-            }
-            return;
-        }
-
-        paramList.add(parameter);
-    }
 
     /**
      * @param key
@@ -610,23 +559,7 @@ public final class Messages {
      */
     public static String getString( final Enum< ? > key,
                                     final Object... parameters ) {
-        final String text = getString( key );
-
-        // return key if message not found
-        if ( text == null ) {
-            return OPEN_ANGLE_BRACKET + key.toString() + CLOSE_ANGLE_BRACKET;
-        }
-
-        // return if no parameters to format
-        if ( ( parameters == null ) || ( parameters.length == 0 ) ) {
-            return text;
-        }
-
-        List<Object> expandedParam = new ArrayList<>();
-        expandParameters(parameters, expandedParam);
-
-        // return formatted message
-        return String.format( text, expandedParam.toArray() );
+        return io.syndesis.dv.utils.Messages.getString(key, RESOURCE_BUNDLE, parameters);
     }
 
     /**
