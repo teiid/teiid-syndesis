@@ -1,11 +1,13 @@
 /*
- * Copyright (C) 2013 Red Hat, Inc.
+ * Copyright Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags and
+ * the COPYRIGHT.txt file distributed with this work.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -100,22 +102,24 @@ public class RestViewDefinitionStatus {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        RestViewDefinitionStatus other = (RestViewDefinitionStatus)obj;
-        if (this.status == null) {
-            if (other.status != null)
-                return false;
-        } else
-            if (!this.status.equals(other.status))
-                return false;
-        if (this.message == null) {
-            if (other.message != null)
-                return false;
-        } else
-            if (!this.message.equals(other.message))
-                return false;
-        return true;
+
+        if (obj instanceof RestViewDefinitionStatus) {
+            RestViewDefinitionStatus other = (RestViewDefinitionStatus)obj;
+            if (this.status == null) {
+                if (other.status != null)
+                    return false;
+                } else
+                if (!this.status.equals(other.status))
+                    return false;
+            if (this.message == null) {
+                if (other.message != null)
+                    return false;
+            } else
+                if (!this.message.equals(other.message))
+                    return false;
+            return true;
+        }
+        return false;
     }
 
     @SuppressWarnings( "nls" )

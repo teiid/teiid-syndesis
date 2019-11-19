@@ -72,7 +72,7 @@ public abstract class BaseEntity {
     }
 
     @PrePersist
-    private void prePersist() {
+    protected void prePersist() {
         if (name != null) {
             upperName = name.toUpperCase();
         }
