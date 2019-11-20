@@ -399,7 +399,7 @@ public class MetadataService extends DvService implements ServiceVdbGenerator.Sc
 
             List<RestSchemaNode> schemaNodes = Collections.emptyList();
             if ( schemaModel != null ) {
-                schemaNodes = this.generateSourceSchema(teiidSourceName, schemaModel.getTables().values());
+                schemaNodes = generateSourceSchema(teiidSourceName, schemaModel.getTables().values());
             }
 
             return schemaNodes;
@@ -692,7 +692,7 @@ public class MetadataService extends DvService implements ServiceVdbGenerator.Sc
      * @return the list of schema nodes
      * @throws KException exception if problem occurs
      */
-    private List<RestSchemaNode> generateSourceSchema(final String sourceName, final Collection<org.teiid.metadata.Table> tables) throws KException {
+    private static List<RestSchemaNode> generateSourceSchema(final String sourceName, final Collection<org.teiid.metadata.Table> tables) throws KException {
         List<RestSchemaNode> schemaNodes = new ArrayList<RestSchemaNode>();
 
         for(final org.teiid.metadata.Table table : tables) {
@@ -734,7 +734,7 @@ public class MetadataService extends DvService implements ServiceVdbGenerator.Sc
      * @param segments the full path of segments, starting at the root
      * @return the final segments parent node.  (null if final segment is at the root)
      */
-    private RestSchemaNode getLeafNodeParent(String sourceName, List<RestSchemaNode> currentNodes, List<Pair<String, String>> segments) {
+    private static RestSchemaNode getLeafNodeParent(String sourceName, List<RestSchemaNode> currentNodes, List<Pair<String, String>> segments) {
         RestSchemaNode parentNode = null;
         // Determine number of levels to process.
         // - process one level if one segment
@@ -789,7 +789,7 @@ public class MetadataService extends DvService implements ServiceVdbGenerator.Sc
      * @param nodes the list of nodes to search
      * @return the matching node, if found
      */
-    private RestSchemaNode getMatchingNode(String sourceName, String name, String type, Collection<RestSchemaNode> nodes) {
+    private static RestSchemaNode getMatchingNode(String sourceName, String name, String type, Collection<RestSchemaNode> nodes) {
         RestSchemaNode matchedNode = null;
         for(RestSchemaNode node : nodes) {
             if( node.getConnectionName().equals(sourceName) && node.getName().equals(name) && node.getType().equals(type) ) {

@@ -17,8 +17,6 @@ package io.syndesis.dv.metadata;
 
 import java.util.Collection;
 
-import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
-import io.syndesis.dv.metadata.query.QSResult;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.deployers.VDBLifeCycleListener;
@@ -28,6 +26,8 @@ import org.teiid.query.validator.ValidatorReport;
 
 import io.syndesis.dv.KException;
 import io.syndesis.dv.StringConstants;
+import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
+import io.syndesis.dv.metadata.query.QSResult;
 
 public interface MetadataInstance extends StringConstants {
 
@@ -115,12 +115,14 @@ public interface MetadataInstance extends StringConstants {
          * @return the {@link ConnectivityType} for the given type
          */
         public static ConnectivityType findType(String type) {
-            if (type == null)
+            if (type == null) {
                 return null;
+            }
 
             for (ConnectivityType cType : ConnectivityType.values()) {
-                if (type.equalsIgnoreCase(cType.name()))
+                if (type.equalsIgnoreCase(cType.name())) {
                     return cType;
+                }
             }
 
             return null;

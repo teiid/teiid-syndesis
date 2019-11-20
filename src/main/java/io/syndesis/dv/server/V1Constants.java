@@ -27,6 +27,7 @@ import io.syndesis.dv.StringConstants;
 public interface V1Constants extends StringConstants {
 
     class App {
+        private App() {}
 
         private static final Properties properties = new Properties();
 

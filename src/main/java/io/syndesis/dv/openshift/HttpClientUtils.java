@@ -15,20 +15,9 @@
  */
 package io.syndesis.dv.openshift;
 
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.fabric8.kubernetes.client.internal.SSLUtils;
-import okhttp3.*;
-import okhttp3.logging.HttpLoggingInterceptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.fabric8.kubernetes.client.utils.Utils.isNotNullOrEmpty;
+import static okhttp3.ConnectionSpec.CLEARTEXT;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -38,11 +27,34 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import static io.fabric8.kubernetes.client.utils.Utils.isNotNullOrEmpty;
-import static okhttp3.ConnectionSpec.CLEARTEXT;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.internal.SSLUtils;
+import okhttp3.Authenticator;
+import okhttp3.ConnectionSpec;
+import okhttp3.Credentials;
+import okhttp3.Dispatcher;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Route;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 // this copy copied from io.fabric8.kubernetes client library to pass the custom builder
 public class HttpClientUtils {
+
+    private HttpClientUtils() {}
 
     public static OkHttpClient createHttpClient(final Config config, OkHttpClient.Builder httpClientBuilder) {
         try {

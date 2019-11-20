@@ -100,25 +100,32 @@ public class StatusObject {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         StatusObject other = (StatusObject)obj;
         if (this.attributes == null) {
-            if (other.attributes != null)
+            if (other.attributes != null) {
                 return false;
+            }
         } else
-            if (!this.attributes.equals(other.attributes))
+            if (!this.attributes.equals(other.attributes)) {
                 return false;
+            }
         if (this.title == null) {
-            if (other.title != null)
+            if (other.title != null) {
                 return false;
+            }
         } else
-            if (!this.title.equals(other.title))
+            if (!this.title.equals(other.title)) {
                 return false;
+            }
         return true;
     }
 

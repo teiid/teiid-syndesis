@@ -15,7 +15,7 @@
  */
 package io.syndesis.dv.server.endpoint;
 
-import static io.syndesis.dv.server.Messages.Error.*;
+import static io.syndesis.dv.server.Messages.Error.DATASERVICE_SERVICE_SERVICE_NAME_ERROR;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

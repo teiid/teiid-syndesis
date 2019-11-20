@@ -39,6 +39,8 @@ import org.apache.http.ssl.SSLContextBuilder;
 
 public class SyndesisHttpUtil {
 
+    private SyndesisHttpUtil() {}
+
     private static CloseableHttpClient buildHttpClient()
             throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
         // no verification of host for now.

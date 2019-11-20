@@ -111,27 +111,36 @@ public class QueryAttribute {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         QueryAttribute other = (QueryAttribute)obj;
-        if (limit != other.limit)
+        if (limit != other.limit) {
             return false;
-        if (offset != other.offset)
+        }
+        if (offset != other.offset) {
             return false;
+        }
         if (query == null) {
-            if (other.query != null)
+            if (other.query != null) {
                 return false;
-        } else if (!query.equals(other.query))
+            }
+        } else if (!query.equals(other.query)) {
             return false;
+        }
         if (target == null) {
-            if (other.target != null)
+            if (other.target != null) {
                 return false;
-        } else if (!target.equals(other.target))
+            }
+        } else if (!target.equals(other.target)) {
             return false;
+        }
         return true;
     }
 

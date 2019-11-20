@@ -114,11 +114,11 @@ public class IntegrationTest {
 
     @Test
     public void testError() throws Exception {
-    	QueryAttribute kqa = new QueryAttribute();
-    	ResponseEntity<String> response = restTemplate.postForEntity("/v1/metadata/query", kqa, String.class);
+        QueryAttribute kqa = new QueryAttribute();
+        ResponseEntity<String> response = restTemplate.postForEntity("/v1/metadata/query", kqa, String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-    	assertTrue(response.getBody().endsWith("\"status\":403,\"error\":\"Forbidden\","
-    			+ "\"message\":\"No query has been specified\",\"path\":\"/v1/metadata/query\"}"));
+        assertTrue(response.getBody().endsWith("\"status\":403,\"error\":\"Forbidden\","
+                + "\"message\":\"No query has been specified\",\"path\":\"/v1/metadata/query\"}"));
 
     }
 

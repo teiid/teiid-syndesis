@@ -16,6 +16,7 @@
 package io.syndesis.dv.openshift;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -160,7 +161,7 @@ public class SyndesisConnectionMonitor {
             @Override
             public void onMessage(WebSocket webSocket, ByteString message) {
                 LOGGER.debug("   ---->>>  onMessage(ByteString): New ByteString Message received " + message);
-                handleMessage(new String(message.asByteBuffer().array()));
+                handleMessage(new String(message.asByteBuffer().array(), Charset.defaultCharset()));
             }
 
             @Override
