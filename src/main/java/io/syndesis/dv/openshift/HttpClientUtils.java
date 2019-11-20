@@ -53,8 +53,8 @@ import okhttp3.logging.HttpLoggingInterceptor;
 
 // this copy copied from io.fabric8.kubernetes client library to pass the custom builder
 public class HttpClientUtils {
-	
-	private HttpClientUtils() {}
+
+    private HttpClientUtils() {}
 
     public static OkHttpClient createHttpClient(final Config config, OkHttpClient.Builder httpClientBuilder) {
         try {

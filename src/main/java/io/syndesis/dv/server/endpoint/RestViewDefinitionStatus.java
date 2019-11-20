@@ -96,25 +96,32 @@ public class RestViewDefinitionStatus {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         RestViewDefinitionStatus other = (RestViewDefinitionStatus)obj;
         if (this.status == null) {
-            if (other.status != null)
+            if (other.status != null) {
                 return false;
+            }
         } else
-            if (!this.status.equals(other.status))
+            if (!this.status.equals(other.status)) {
                 return false;
+            }
         if (this.message == null) {
-            if (other.message != null)
+            if (other.message != null) {
                 return false;
+            }
         } else
-            if (!this.message.equals(other.message))
+            if (!this.message.equals(other.message)) {
                 return false;
+            }
         return true;
     }
 

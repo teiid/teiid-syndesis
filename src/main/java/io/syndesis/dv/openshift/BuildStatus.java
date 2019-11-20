@@ -193,19 +193,19 @@ public class BuildStatus {
     }
 
     public List<RouteStatus> getRoutes() {
-        if (this.routes == null)
+        if (this.routes == null) {
             return Collections.emptyList();
-
+        }
         return this.routes;
     }
 
     public void addRoute(RouteStatus route) {
-        if (route == null)
+        if (route == null) {
             return;
-
-        if (this.routes == null)
+        }
+        if (this.routes == null) {
             this.routes = new ArrayList<RouteStatus>();
-
+        }
         this.routes.add(route);
     }
 

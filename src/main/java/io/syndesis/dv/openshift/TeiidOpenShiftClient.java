@@ -15,11 +15,33 @@
  */
 package io.syndesis.dv.openshift;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -51,12 +73,32 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
-import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.internal.PodOperationsImpl;
-import io.fabric8.openshift.api.model.*;
+import io.fabric8.openshift.api.model.Build;
+import io.fabric8.openshift.api.model.BuildConfig;
+import io.fabric8.openshift.api.model.BuildList;
+import io.fabric8.openshift.api.model.DeploymentCondition;
+import io.fabric8.openshift.api.model.DeploymentConfig;
+import io.fabric8.openshift.api.model.DeploymentConfigStatus;
+import io.fabric8.openshift.api.model.ImageStream;
+import io.fabric8.openshift.api.model.Route;
+import io.fabric8.openshift.api.model.RouteList;
+import io.fabric8.openshift.api.model.RouteSpec;
+import io.fabric8.openshift.api.model.TLSConfigBuilder;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -342,14 +384,16 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private void closeLog(String id) {
         PrintWriter pw = logBuffers.remove(id);
-        if (pw == null)
+        if (pw == null) {
             return;
+        }
 
         pw.close();
     }
     private void addLog(String id, String message) {
-        if (id == null)
+        if (id == null) {
             return; // Cannot record these log messages
+        }
 
         try {
             PrintWriter pw = logBuffers.get(id);
@@ -379,13 +423,15 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         String logPath = getLogPath(id);
         File logFile = new File(logPath);
-        if (logFile.exists())
+        if (logFile.exists()) {
             logFile.delete();
+        }
     }
 
     private void debug(String id, String message) {
-        if (! LOGGER.isDebugEnabled())
+        if (! LOGGER.isDebugEnabled()) {
             return;
+        }
 
         LOGGER.debug(message);
         addLog(id, message);
@@ -1263,9 +1309,10 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                 Map<String, String> config = def.getPublishedImageDataSourceProperties(ds);
                 if (config != null) {
-                    for (Map.Entry<String, String> entry : config.entrySet())
+                    for (Map.Entry<String, String> entry : config.entrySet()) {
                         properties.put(entry.getKey(), Base64.getEncoder()
                                 .encodeToString(encryptionComponent.decrypt(entry.getValue()).getBytes()));
+                    }
                 }
             }
         }
@@ -1342,8 +1389,9 @@ public class TeiidOpenShiftClient implements StringConstants {
         String openShiftName = getOpenShiftName(virtualization);
         String logPath = getLogPath(openShiftName);
         File logFile = new File(logPath);
-        if (! logFile.exists())
+        if (! logFile.exists()) {
             return "No log available";
+        }
 
         try {
             return ObjectConverterUtil.convertFileToString(logFile);
@@ -1602,28 +1650,32 @@ public class TeiidOpenShiftClient implements StringConstants {
         RouteStatus theRoute = null;
         debug(openShiftName, "Getting route of type " + protocolType.id() + " for Service");
         RouteList routes = client.routes().inNamespace(namespace).list();
-        if (routes == null || routes.getItems().isEmpty())
+        if (routes == null || routes.getItems().isEmpty()) {
             return theRoute;
+        }
 
         for (Route route : routes.getItems()) {
             ObjectMeta metadata = route.getMetadata();
             String name = metadata.getName();
-            if (! name.endsWith(HYPHEN + protocolType.id()))
+            if (! name.endsWith(HYPHEN + protocolType.id())) {
                 continue;
+            }
 
             RouteSpec spec = route.getSpec();
             String target = spec.getTo().getName();
 
             Map<String, String> annotations = metadata.getAnnotations();
             String description = annotations.get(DESCRIPTION_ANNOTATION_LABEL);
-            if (description == null || ! SERVICE_DESCRIPTION.equals(description))
+            if (description == null || ! SERVICE_DESCRIPTION.equals(description)) {
                 continue;
+            }
 
             //
             // Check we have the right route for the vdb in question
             //
-            if (! target.equals(openShiftName + HYPHEN + protocolType.id()))
+            if (! target.equals(openShiftName + HYPHEN + protocolType.id())) {
                 continue;
+            }
 
             theRoute = new RouteStatus(name, protocolType);
             theRoute.setHost(spec.getHost());

@@ -17,9 +17,10 @@ package io.syndesis.dv.metadata.internal;
 
 import java.util.Map;
 
-import io.syndesis.dv.metadata.TeiidDataSource;
 import org.teiid.core.util.ArgCheck;
 import org.teiid.runtime.EmbeddedServer.ConnectionFactoryProvider;
+
+import io.syndesis.dv.metadata.TeiidDataSource;
 
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource, ConnectionFactoryProvider<Object> {
     private final String name;
@@ -46,12 +47,14 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
+        }
         if (obj instanceof TeiidDataSource) {
-        	TeiidDataSource tds = (TeiidDataSource) obj;
-        	if (getName().equals(tds.getName()))
+            TeiidDataSource tds = (TeiidDataSource) obj;
+            if (getName().equals(tds.getName())) {
                 return true;
+            }
         }
 
         return false;

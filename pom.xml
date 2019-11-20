@@ -26,7 +26,6 @@
   <groupId>org.teiid</groupId>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dv-server</artifactId>
-  <version>1.9-SNAPSHOT</version>
   <name>DV Server</name>
 
   <packaging>jar</packaging>
@@ -257,7 +256,6 @@
     <version.mysql>8.0.17</version.mysql>
     <version.org.mongodb>3.6.3</version.org.mongodb>
     <version.postgresql>42.1.4</version.postgresql>
-    <version.commons-logging>1.2</version.commons-logging>
     <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE -->
   </properties>
 
@@ -436,65 +434,6 @@
 
     <pluginManagement>
       <plugins>
-	    <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-		  <artifactId>maven-checkstyle-plugin</artifactId>
-		  <configuration>
-		    <configLocation>checkstyle.xml</configLocation>
-		    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-		  </configuration>
-		</plugin>
-        <plugin>
-          <groupId>com.mycila</groupId>
-          <artifactId>license-maven-plugin</artifactId>
-          <inherited>false</inherited>
-          <configuration>
-            <header>license/syndesis-license.txt</header>
-            <skipExistingHeaders>false</skipExistingHeaders>
-            <!-- Reduce this even further. Vote for https://github.com/mycila/license-maven-plugin/pull/133
-                 to make this a fixed thread number value -->
-            <concurrencyFactor>1</concurrencyFactor>
-            <mapping combine.children="append">
-              <provides>SCRIPT_STYLE</provides>
-              <assemble>SCRIPT_STYLE</assemble>
-            </mapping>
-            <includes>
-              <include>**/src/**</include>
-              <include>**/pom.xml</include>
-            </includes>
-            <excludes>
-              <exclude>**/node_modules/**</exclude>
-              <exclude>.editorconfig</exclude>
-              <exclude>license.txt</exclude>
-              <exclude>.mention-bot</exclude>
-              <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
-              <exclude>mvnw*</exclude>
-              <exclude>**/resources/**/test-*</exclude>
-              <exclude>**/*.mustache</exclude>
-              <exclude>**/test/resources/**</exclude>
-              <exclude>**/spring.factories</exclude>
-              <exclude>**/*.adoc</exclude>
-              <exclude>**/archetypes/**/src/main/resources/archetype-resources/**</exclude>
-              <exclude>**/s2i/src/main/docker/project/**</exclude>
-              <exclude>**/Dockerfile</exclude>
-              <exclude>**/*.ts</exclude>
-              <exclude>**/*.scss</exclude>
-              <exclude>**/*.html</exclude>
-              <exclude>**/config.json*</exclude>
-              <exclude>**/.gitkeep</exclude>
-              <exclude>**/*.webapp</exclude>
-              <exclude>**/browserconfig.xml</exclude>
-              <exclude>connector/**/META-INF/syndesis/connector/verifier/*</exclude>
-              <exclude>connector/**/springboot/*Configuration.java</exclude><!-- auto generated without headers -->
-              <exclude>connector/**/springboot/*Common.java </exclude><!-- auto generated without headers -->
-              <exclude>meta/**/run-env.sh</exclude>
-              <exclude>server/syndesis-builder-image-generator/image/**</exclude><!-- auto generated without headers -->
-              <exclude>**/src/main/resources/banner.txt</exclude>
-              <!-- excludes as it is copied from upstream camel component and nneds to be moved back to caml -->
-              <exclude>connector/servicenow/src/main/java/io/syndesis/connector/servicenow/ServiceNowMetaDataExtension.java</exclude>
-            </excludes>
-          </configuration>
-        </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
@@ -1000,7 +939,6 @@
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
-        <version>5.2.0.RELEASE</version>
     </dependency>
     <dependency>
         <groupId>io.springfox</groupId>
@@ -1022,11 +960,16 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
     </dependency>
+    <!-- for commons logging -->
     <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>${version.commons-logging}</version>
-      </dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jcl</artifactId>
+    </dependency>
+    <!-- for servlet api -->
+    <dependency>
+        <groupId> org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
@@ -1072,10 +1015,6 @@
       <artifactId>shrinkwrap-impl-base</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
     </dependency>
@@ -1116,12 +1055,19 @@
       <type>pom</type>
       <scope>test</scope>
     </dependency>
+    
+    <!-- to remove when we're aligned with syndesis on spring-boot -->
     <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.5</version>
-        <scope>provided</scope>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+      <version>5.1.6.RELEASE</version>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>5.1.9.RELEASE</version>
+    </dependency>
+    
   </dependencies>
 
   <reporting>

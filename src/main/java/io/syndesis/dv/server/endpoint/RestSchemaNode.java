@@ -156,16 +156,18 @@ public class RestSchemaNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
+        }
         if (obj instanceof RestSchemaNode) {
-        	RestSchemaNode other = (RestSchemaNode) obj;
-        	return Objects.equals(connectionName, other.connectionName)
+            RestSchemaNode other = (RestSchemaNode) obj;
+            return Objects.equals(connectionName, other.connectionName)
                 && Objects.equals(name, other.name)
                 && Objects.equals(type, other.type);
-        }   
+        }
         return false;
     }
 

@@ -15,7 +15,7 @@
  */
 package io.syndesis.dv.server;
 
-import static io.syndesis.dv.StringConstants.*;
+import static io.syndesis.dv.StringConstants.DOT;
 
 import java.util.ResourceBundle;
 

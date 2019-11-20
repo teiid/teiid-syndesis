@@ -34,15 +34,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
-import io.syndesis.dv.datasources.ExternalSource;
-import io.syndesis.dv.metadata.MetadataInstance;
-import io.syndesis.dv.metadata.TeiidDataSource;
-import io.syndesis.dv.metadata.TeiidVdb;
-import io.syndesis.dv.metadata.query.QSColumn;
-import io.syndesis.dv.metadata.query.QSResult;
-import io.syndesis.dv.metadata.query.QSRow;
-import io.syndesis.dv.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -90,6 +81,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 
 import io.syndesis.dv.KException;
+import io.syndesis.dv.datasources.DefaultSyndesisDataSource;
+import io.syndesis.dv.datasources.ExternalSource;
+import io.syndesis.dv.metadata.MetadataInstance;
+import io.syndesis.dv.metadata.TeiidDataSource;
+import io.syndesis.dv.metadata.TeiidVdb;
+import io.syndesis.dv.metadata.query.QSColumn;
+import io.syndesis.dv.metadata.query.QSResult;
+import io.syndesis.dv.metadata.query.QSRow;
+import io.syndesis.dv.utils.KLog;
 
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
@@ -347,14 +347,17 @@ public class DefaultMetadataInstance implements MetadataInstance {
             throw new KException(e);
         } finally {
             try {
-                if (rs != null)
+                if (rs != null) {
                     rs.close();
+                }
 
-                if (statement != null)
+                if (statement != null) {
                     statement.close();
+                }
 
-                if (connection != null)
+                if (connection != null) {
                     connection.close();
+                }
             } catch (SQLException e1) {
                 // ignore
             }
@@ -394,8 +397,9 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidVdb> getVdbs() throws KException {
         try {
             Collection<? extends VDB> vdbs = getAdmin().getVDBs();
-            if (vdbs.isEmpty())
+            if (vdbs.isEmpty()) {
                 return Collections.emptyList();
+            }
 
             List<TeiidVdb> teiidVdbs = new ArrayList<>();
             for (VDB vdb : vdbs) {
@@ -412,8 +416,9 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public TeiidVdbImpl getVdb(String name) throws KException {
         try {
             VDB vdb = getAdmin().getVDB(name, DEFAULT_VDB_VERSION);
-            if (vdb == null)
+            if (vdb == null) {
                 return null;
+            }
 
             return new TeiidVdbImpl(vdb);
         } catch (AdminException ex) {

@@ -25,11 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import io.syndesis.dv.metadata.TeiidDataSource;
-import io.syndesis.dv.metadata.TeiidVdb;
-import io.syndesis.dv.metadata.internal.DefaultMetadataInstance;
-import io.syndesis.dv.model.ViewDefinition;
-import io.syndesis.dv.utils.PathUtils;
 import org.springframework.data.util.Pair;
 import org.teiid.adminapi.Admin.SchemaObjectType;
 import org.teiid.adminapi.impl.ModelMetaData;
@@ -48,6 +43,11 @@ import org.teiid.query.sql.visitor.SQLStringVisitor;
 
 import io.syndesis.dv.KException;
 import io.syndesis.dv.StringConstants;
+import io.syndesis.dv.metadata.TeiidDataSource;
+import io.syndesis.dv.metadata.TeiidVdb;
+import io.syndesis.dv.metadata.internal.DefaultMetadataInstance;
+import io.syndesis.dv.model.ViewDefinition;
+import io.syndesis.dv.utils.PathUtils;
 
 /**
  * This class provides methods to generate data service vdbs containing a view model
@@ -410,7 +410,9 @@ public final class ServiceVdbGenerator implements StringConstants {
             return null;
         }
         TableInfo[] tableInfos = getSourceTableInfos(viewDef);
-        if (tableInfos == null) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
+        if (tableInfos == null) {
+            throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
+        }
 
         if (tableInfos.length == 0) {
             StringBuilder sb = new StringBuilder();
