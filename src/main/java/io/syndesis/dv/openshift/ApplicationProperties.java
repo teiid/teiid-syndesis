@@ -17,6 +17,8 @@ package io.syndesis.dv.openshift;
 
 public class ApplicationProperties {
 
+    private ApplicationProperties() {}
+
     /**
      * Gets the namespace
      */

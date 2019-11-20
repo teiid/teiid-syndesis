@@ -25,6 +25,8 @@ import org.teiid.translator.Translator;
 
 public class ExternalSource {
 
+    private ExternalSource() {}
+
     public static Class<? extends ExecutionFactory<?, ?>> translatorClass(String translatorName, String basePackage) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new AnnotationTypeFilter(Translator.class));

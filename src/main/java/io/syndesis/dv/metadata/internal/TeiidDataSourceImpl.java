@@ -48,13 +48,11 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
-        if (obj.getClass() != getClass())
-            return false;
-
-        TeiidDataSource other = (TeiidDataSource)obj;
-
-        if (getName().equals(other.getName()))
-            return true;
+        if (obj instanceof TeiidDataSource) {
+        	TeiidDataSource tds = (TeiidDataSource) obj;
+        	if (getName().equals(tds.getName()))
+                return true;
+        }
 
         return false;
     }
